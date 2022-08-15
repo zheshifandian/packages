@@ -2,7 +2,7 @@ if PACKAGE_iputils-tracepath
 
 config TRACEPATH_LEGACY_SYMLINKS
 	bool
-	default n
+	default y
 	prompt "Install legacy tracepath4 and tracepath6 symlinks"
 	help
 		Iputils previously generated separate "tracepath" and

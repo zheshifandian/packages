@@ -2,7 +2,7 @@ if PACKAGE_iputils-ping
 
 config PING_LEGACY_SYMLINKS
 	bool
-	default n
+	default y
 	prompt "Install legacy ping4 and ping6 symlinks"
 	help
 		Iputils previously generated separate "ping" and "ping6"
