@@ -9,13 +9,13 @@ include $(TOPDIR)/rules.mk
 
 PKG_NPM_NAME:=sqlite3
 PKG_NAME:=node-$(PKG_NPM_NAME)
-PKG_VERSION:=5.0.8
+PKG_VERSION:=5.1.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NPM_NAME)-$(PKG_VERSION).tgz
 PKG_SOURCE_URL:=https://mirrors.tencent.com/npm/$(PKG_NPM_NAME)/-/ \
                 https://registry.npmjs.org/$(PKG_NPM_NAME)/-/
-PKG_HASH:=fe701c378336347574530a63eeeddd9ee5aa25b8b950bd0df5c4d2aa047c1336
+PKG_HASH:=d917679c3add2ab80a0d8ba66d2eee56d55aca9257fca7f5658c085f659b4230
 
 PKG_MAINTAINER:=Hirokazu MORIKAWA <morikw2@gmail.com>
 PKG_LICENSE:=BSD-3-Clause

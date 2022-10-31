@@ -44,7 +44,7 @@ define Package/libQt6/Default
   SUBMENU:=Qt6
   TITLE:=Qt6
   URL:=http://qt-project.org
-  DEPENDS:=@!arc +libatomic +libdouble-conversion +libstdcpp +zlib
+  DEPENDS:=@!(arc||TARGET_gemini) +libatomic +libdouble-conversion +libstdcpp +zlib
 endef
 
 define Package/libQt6
@@ -61,6 +61,8 @@ ifdef CONFIG_USE_GLIBC
     TARGET_LDFLAGS+= -Wl,--sysroot=$(TOOLCHAIN_DIR)
   endif
 endif
+
+CMAKE_SHARED_LDFLAGS := $(filter-out -Wl$(comma)-Bsymbolic-functions,$(CMAKE_SHARED_LDFLAGS))
 
 CMAKE_HOST_OPTIONS+= \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -82,6 +84,7 @@ CMAKE_OPTIONS+= \
 	-DQT_HOST_PATH=$(STAGING_DIR_HOSTPKG) \
 	-DINSTALL_PLUGINSDIR=/usr/lib/qt6plugins \
 	-DQT_QMAKE_TARGET_MKSPEC=devices/linux-generic-g++ \
+	-DQT_QMAKE_DEVICE_OPTIONS=CROSS_COMPILE="$(TARGET_CROSS);COMPILER_FLAGS=$(TARGET_CFLAGS) $(EXTRA_CFLAGS) $(TARGET_CPPFLAGS) $(EXTRA_CPPFLAGS);LINKER_FLAGS=$(TARGET_LDFLAGS) $(EXTRA_LDFLAGS)" \
 	-DQT_BUILD_EXAMPLES=OFF \
 	-DQT_BUILD_TESTS=OFF \
 	-DQT_BUILD_TOOLS_WHEN_CROSSCOMPILING=OFF \
