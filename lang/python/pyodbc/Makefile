@@ -18,7 +18,6 @@ PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_BUILD_DEPENDS:=unixodbc/host
 
 include ../pypi.mk
-include $(INCLUDE_DIR)/uclibc++.mk
 include $(INCLUDE_DIR)/package.mk
 include ../python3-package.mk
 
@@ -28,7 +27,7 @@ define Package/python3-pyodbc
   SUBMENU:=Python
   TITLE:=python3-pyodbc
   URL:=https://github.com/mkleehammer/pyodbc
-  DEPENDS:=+unixodbc +python3-light $(CXX_DEPENDS)
+  DEPENDS:=+unixodbc +python3-light +libstdcpp
 endef
 
 define Package/python3-pyodbc/description

@@ -18,5 +18,5 @@
 -	_ "github.com/rclone/rclone/lib/plugin" // import plugins
 +	// _ "github.com/rclone/rclone/lib/plugin" // import plugins
  )
- 
+
  func main() {

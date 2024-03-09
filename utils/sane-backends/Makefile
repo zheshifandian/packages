@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sane-backends
 PKG_VERSION:=1.0.32
-PKG_RELEASE:=2
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://gitlab.com/sane-project/backends/uploads/104f09c07d35519cc8e72e604f11643f
@@ -187,19 +187,19 @@ CONFIGURE_VARS += \
     ac_cv_func_mmap_fixed_mapped="yes"
 
 define Build/Configure
-	$(INSTALL_DIR) $(PKG_BUILD_DIR)/backend/.libs
+	mkdir -p $(PKG_BUILD_DIR)/backend/.libs
 	$(Build/Configure/Default)
 endef
 
 define Build/Install
 	$(call Build/Install/Default)
-	$(INSTALL_DIR) $(PKG_INSTALL_DIR)/usr/share/sane
-	cd $(PKG_BUILD_DIR)/doc/descriptions && for file in *.desc; do \
-		sed -rn -e '/^:usbid[[:blank:]]+"?0x(....)"?[[:blank:]]+"?0x(....)"?.*/{s//\1 \2/;p}' $$$$file | \
-			sort -u > $(PKG_INSTALL_DIR)/usr/share/sane/$$$${file/\.desc/}.usbid; \
-		awk -v path=$(PKG_INSTALL_DIR)/usr/share/sane -v file=$$$${file/\.desc/}.usbid '{ print $$$$2 > path"/"$$$$1"-"file }' \
-			$(PKG_INSTALL_DIR)/usr/share/sane/$$$${file/\.desc/}.usbid ; \
-	done
+	mkdir -p $(PKG_INSTALL_DIR)/usr/share/sane
+	$(foreach file, $(filter-out %/unsupported.desc ,$(wildcard $(PKG_BUILD_DIR)/doc/descriptions/*.desc)),
+		sed -rn -e '/^:usbid[[:blank:]]+"?0x(....)"?[[:blank:]]+"?0x(....)"?.*/{s//\1 \2/;p}' $(file) | \
+			sort -u > $(PKG_INSTALL_DIR)/usr/share/sane/$(basename $(notdir $(file))).usbid; \
+		awk '{ print $$$$2 > "$(PKG_INSTALL_DIR)/usr/share/sane/"$$$$1"-$(basename $(notdir $(file))).usbid" }' \
+			$(PKG_INSTALL_DIR)/usr/share/sane/$(basename $(notdir $(file))).usbid ;
+	)
 endef
 
 define Package/libsane/install
@@ -207,7 +207,8 @@ define Package/libsane/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libsane.so.* $(1)/usr/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/sane/libsane-dll.so.* $(1)/usr/lib/sane/
 	$(INSTALL_DIR) $(1)/etc/sane.d/dll.d
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/etc/sane.d/dll.conf $(1)/etc/sane.d/
+	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/sane.d/dll.conf $(1)/etc/sane.d/
+	chmod 0644 $(1)/etc/sane.d/dll.conf
 endef
 
 define Package/libsane/conffiles
@@ -216,13 +217,14 @@ endef
 
 define Package/sane-daemon/install
 	$(INSTALL_DIR) $(1)/etc/sane.d
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/etc/sane.d/saned.conf $(1)/etc/sane.d/
+	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/sane.d/saned.conf $(1)/etc/sane.d/
+	chmod 0644 $(1)/etc/sane.d/saned.conf
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) ./files/saned.sbin $(1)/usr/sbin/saned
 	$(INSTALL_DIR) $(1)/usr/lib/sane/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/saned $(1)/usr/lib/sane/saned
 	$(INSTALL_DIR) $(1)/etc/xinetd.d
-	$(INSTALL_DATA) ./files/saned.xinetd $(1)/etc/xinetd.d/sane-port
+	$(INSTALL_CONF) ./files/saned.xinetd $(1)/etc/xinetd.d/sane-port
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/usb/
 	$(INSTALL_BIN) ./files/saned.hotplug $(1)/etc/hotplug.d/usb/20-saned
 endef
@@ -272,7 +274,8 @@ This package contains the SANE backend for $(2).
   define Package/sane-$(1)/install
 	if [ -f "$(PKG_INSTALL_DIR)/etc/sane.d/$(1).conf" ]; then \
 		$(INSTALL_DIR) $$(1)/etc/sane.d ; \
-		$(INSTALL_DATA) $(PKG_INSTALL_DIR)/etc/sane.d/$(1).conf $$(1)/etc/sane.d/ ; \
+		$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/sane.d/$(1).conf $$(1)/etc/sane.d/ ; \
+	        chmod 0644 $$(1)/etc/sane.d/$(1).conf ; \
 	fi ; \
 	$(INSTALL_DIR) $$(1)/usr/lib/sane ; \
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/sane/libsane-$(1).so.* $$(1)/usr/lib/sane/ ; \

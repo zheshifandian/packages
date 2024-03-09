@@ -8,7 +8,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=afalg_engine
 PKG_VERSION:=1.2.0-beta.1
-PKG_RELEASE:=1
+PKG_RELEASE:=5
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/cotequeiroz/afalg_engine/archive/v$(PKG_VERSION)
@@ -25,19 +25,15 @@ PKG_CONFIG_DEPENDS:= \
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
+include $(INCLUDE_DIR)/openssl-module.mk
 
-ENGINES_DIR:=engines-1.1
-
+$(eval $(call Package/openssl/add-engine,afalg,libopenssl-afalg_sync))
 define Package/libopenssl-afalg_sync
-    SECTION:=libs
-    CATEGORY:=Libraries
-    SUBMENU:=SSL
-    MDEPENDS:=libopenssl
+    $(call Package/openssl/engine/Default)
     TITLE:=AF_ALG engine using sync crypto API
     URL:=https://github.com/cotequeiroz/afalg_engine
-    DEPENDS:=libopenssl @OPENSSL_ENGINE @!OPENSSL_ENGINE_BUILTIN_AFALG \
-	     +libopenssl-conf +kmod-crypto-user
-    CONFLICTS:=libopenssl-afalg $(if $(CONFIG_AFALG_FALLBACK),libopenssl-devcrypto)
+    DEPENDS += @!OPENSSL_ENGINE_BUILTIN_AFALG +kmod-crypto-user
+    CONFLICTS:=libopenssl-afalg
     MENU:=1
 endef
 
@@ -58,14 +54,7 @@ endef
 CMAKE_OPTIONS += \
 	-DOPENSSL_ENGINES_DIR=/usr/lib/$(ENGINES_DIR) \
 	-DDIGESTS=$(if $(CONFIG_AFALG_DIGESTS),ON,OFF) \
-	-DFALLBACK=$(if $(CONFIG_AFALG_FALLBACK),ON,OFF) \
 	-DUPDATE_CTR_IV=$(if $(CONFIG_AFALG_UPDATE_CTR_IV),ON,OFF) \
 	-DUSE_ZERO_COPY=$(if $(CONFIG_AFALG_ZERO_COPY),ON,OFF)
-
-define Package/libopenssl-afalg_sync/install
-	$(INSTALL_DIR) $(1)/usr/lib/$(ENGINES_DIR)
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/$(ENGINES_DIR)/afalg.so \
-			$(1)/usr/lib/$(ENGINES_DIR)/
-endef
 
 $(eval $(call BuildPackage,libopenssl-afalg_sync))

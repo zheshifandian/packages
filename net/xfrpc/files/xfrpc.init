@@ -20,7 +20,7 @@ handle_xfrpc() {
 
 	handle_type() {
 		uci_validate_section xfrpc xfrpc "$name" \
-				'type:or("tcp", "http", "https")' \
+				'type:or("tcp", "udp", "ftp", "http", "https")' \
 				'local_ip:ipaddr:127.0.0.1' \
 				'local_port:uinteger'
 
@@ -28,28 +28,32 @@ handle_xfrpc() {
 		echo "local_ip = $local_ip" >> "$config"
 		echo "local_port = $local_port" >> "$config"
 		case "$type" in
-		tcp)
+		"tcp"|"udp")
 			config_get remote_port "$name" remote_port
 			echo "remote_port = $remote_port" >> "$config"
 			;;
-		http|https)
-			config_get custom_domains "$name" custom_domains
-			[ -z "$custom_domains" ] || echo "custom_domains = $custom_domains" >> "$config"
-			config_get subdomain "$name" subdomain
-			[ -z "$subdomain" ] || echo "subdomain = $subdomain" >> "$config"
+		"ftp")
+			config_get remote_port "$name" remote_port
+			config_get remote_data_port "$name" remote_data_port
+			echo "remote_port = $remote_port" >> "$config"
+			echo "remote_data_port = $remote_data_port" >> "$config"
 			;;
 		esac
 	}
 
 	if [ "$name" = "common" ]; then
-		uci_validate_section xfrpc xfrp "$name" \
-				'server_addr:host' \
+		uci_validate_section xfrpc xfrpc "$name" \
+				'server_addr:ipaddr' \
 				'server_port:uinteger' \
-				'token:string:'	
+				'auth_token:string'
 
+		[ -z "$auth_token" ] && {
+			echo "no auth_token"
+			exit
+		}
 		echo "server_addr = $server_addr" >> "$config"
 		echo "server_port = $server_port" >> "$config"
-		[ -z "$token" ] || echo "token = $token" >> "$config"
+		echo "auth_token = $auth_token" >> "$config"
 	else
 		handle_type
 	fi
@@ -65,8 +69,8 @@ start_service() {
 	> "$conf_file"
 	config_load "$NAME"
 
-	uci_validate_section xfrpc xfrp init \
-			'disabled:bool:0' \
+	uci_validate_section xfrpc xfrpc init \
+			'disabled:bool:1' \
 			'loglevel:uinteger:0'
 
 	if [ $disabled = 1 ]; then

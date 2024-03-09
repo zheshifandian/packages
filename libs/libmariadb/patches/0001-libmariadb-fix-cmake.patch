@@ -7,5 +7,5 @@
 -  END()
 +  ENDIF()
  ENDIF()
- 
+
  SET(product_name "mysql-connector-c-${CPACK_PACKAGE_VERSION}-${PLATFORM_NAME}${CONCAT_SIGN}${MACHINE_NAME}")

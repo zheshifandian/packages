@@ -7,13 +7,13 @@ include $(TOPDIR)/rules.mk
 
 SRC_NAME:=libselinux
 PKG_NAME:=python3-$(SRC_NAME)
-PKG_VERSION:=3.1
-PKG_RELEASE:=1
+PKG_VERSION:=3.3
+PKG_RELEASE:=3
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/python-libselinux/$(SRC_NAME)-$(PKG_VERSION)
 PKG_SOURCE:=$(SRC_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://github.com/SELinuxProject/selinux/releases/download/20200710
-PKG_HASH:=ea5dcbb4d859e3f999c26a13c630da2f16dff9462e3cc8cb7b458ac157d112e7
+PKG_SOURCE_URL:=https://github.com/SELinuxProject/selinux/releases/download/$(PKG_VERSION)
+PKG_HASH:=acfdee27633d2496508c28727c3d41d3748076f66d42fccde2e6b9f3463a7057
 PKG_BUILD_DEPENDS:=swig/host
 
 PKG_MAINTAINER:=Thomas Petazzoni <thomas.petazzoni@bootlin.com>
@@ -47,6 +47,10 @@ define Package/python3-libselinux/description
 
 	This package provides the Python bindings for libselinux.
 endef
+
+ifneq ($(CONFIG_USE_MUSL),)
+  TARGET_CFLAGS += -D_LARGEFILE64_SOURCE
+endif
 
 MAKE_FLAGS += \
 	FTS_LDLIBS=-lfts \

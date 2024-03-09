@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=keepalived
-PKG_VERSION:=2.2.4
+PKG_VERSION:=2.2.7
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.keepalived.org/software
-PKG_HASH:=0138d69087d44beaaa589527f0cfa6885958b320a837147d02b6b7df73ebc1df
+PKG_HASH:=c61940d874154a560a54627ecf7ef47adebdf832164368d10bf242a4d9b7d49d
 
 PKG_CPE_ID:=cpe:/a:keepalived:keepalived
 PKG_LICENSE:=GPL-2.0-or-later
@@ -21,20 +21,20 @@ PKG_LICENSE_FILES:=COPYING
 PKG_MAINTAINER:=Ben Kelly <ben@benjii.net> \
 		Florian Eckert <fe@dev.tdt.de>
 
-PKG_CONFIG_DEPENDS:= \
-	CONFIG_KEEPALIVED_VRRP \
-	CONFIG_KEEPALIVED_LVS \
-	CONFIG_KEEPALIVED_IPTABLES \
-	CONFIG_KEEPALIVED_BFD \
-	CONFIG_KEEPALIVED_SNMP_VRRP \
-	CONFIG_KEEPALIVED_SNMP_CHECKER \
-	CONFIG_KEEPALIVED_SNMP_RFC2 \
-	CONFIG_KEEPALIVED_SNMP_RFC3 \
-	CONFIG_KEEPALIVED_SNMP_REPLY_V3_FOR_V2 \
-	CONFIG_KEEPALIVED_DBUS \
-	CONFIG_KEEPALIVED_JSON \
-	CONFIG_KEEPALIVED_ROUTES \
-	CONFIG_IPV6
+PKG_CONFIG_DEPENDS += \
+	KEEPALIVED_VRRP \
+	KEEPALIVED_LVS \
+	KEEPALIVED_IPTABLES \
+	KEEPALIVED_BFD \
+	KEEPALIVED_SNMP_VRRP \
+	KEEPALIVED_SNMP_CHECKER \
+	KEEPALIVED_SNMP_RFC2 \
+	KEEPALIVED_SNMP_RFC3 \
+	KEEPALIVED_SNMP_REPLY_V3_FOR_V2 \
+	KEEPALIVED_DBUS \
+	KEEPALIVED_JSON \
+	KEEPALIVED_ROUTES \
+	IPV6
 
 PKG_INSTALL:=1
 
@@ -44,6 +44,11 @@ include $(INCLUDE_DIR)/kernel.mk
 define Package/keepalived/config
 	source "$(SOURCE)/Config.in"
 endef
+
+# specifying +(IPV6&&KEEPALIVED_IPTABLES) in the DEPENDS definition doesn't work
+ifeq ($(CONFIG_KEEPALIVED_IPTABLES)$(CONFIG_IPV6),yy)
+  KEEPALIVED_DEPENDS_LIBIP6TC=+libip6tc
+endif
 
 # The +kmod-nf-ipvs line should be +KEEPALIVED_LVS:kmod-nf-ipvs,
 # but make menuconfig then reports :error: recursive dependency detected!
@@ -56,12 +61,13 @@ define Package/keepalived
   DEPENDS:= \
     +libnl-genl \
     +libmagic \
+    +libkmod \
     +KEEPALIVED_VRRP:kmod-macvlan \
     +KEEPALIVED_VRRP:libnl-route \
     +KEEPALIVED_VRRP:libnfnetlink \
     +KEEPALIVED_SHA1:libopenssl \
     +KEEPALIVED_IPTABLES:libip4tc \
-    +KEEPALIVED_IP6TABLES:libip6tc \
+    $(KEEPALIVED_DEPENDS_LIBIP6TC) \
     +KEEPALIVED_IPTABLES:libxtables \
     +KEEPALIVED_IPTABLES:libipset \
     +(KEEPALIVED_SNMP_VRRP||KEEPALIVED_SNMP_CHECKER||KEEPALIVED_SNMP_RFC2||KEEPALIVED_SNMP_RFC3):libnetsnmp \
@@ -83,7 +89,7 @@ CONFIGURE_ARGS+= \
 	--with-init=SYSV \
 	--disable-nftables \
 	--disable-track-process \
-	--with-run-dir="/var/run"
+	--runstatedir="/var/run"
 
 ifeq ($(CONFIG_KEEPALIVED_VRRP),)
 CONFIGURE_ARGS += \
@@ -210,8 +216,8 @@ ifeq ($(CONFIG_KEEPALIVED_LVS),y)
 endif
 
 	$(INSTALL_DIR) $(1)/etc/keepalived
-	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/keepalived/keepalived.conf \
-		$(1)/etc/keepalived/
+	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/keepalived/keepalived.conf.sample \
+		$(1)/etc/keepalived/keepalived.conf
 
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_BIN) ./files/etc/uci-defaults/keepalived \

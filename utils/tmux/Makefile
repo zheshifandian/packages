@@ -2,12 +2,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tmux
-PKG_VERSION:=3.1c
-PKG_RELEASE:=1
+PKG_VERSION:=3.3a
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/tmux/tmux/tar.gz/$(PKG_VERSION)?
-PKG_HASH:=b9617dd4d1c541ebc21b6b5760d58102fc039a593786aab273b5dd95dd514bea
+PKG_HASH:=f9687493203f86d346791a9327cde9148b9b4be959381b1effc575a9364a043f
 PKG_MAINTAINER:=Maxim Storchak <m.storchak@gmail.com>
 
 PKG_LICENSE:=ISC
@@ -25,7 +25,7 @@ define Package/tmux
   CATEGORY:=Utilities
   SUBMENU:=Terminal
   TITLE:=Terminal multiplexer
-  DEPENDS:=+libncurses +libevent2 +libpthread +librt
+  DEPENDS:=+libncurses +libevent2-core +libpthread +librt
   URL:=http://tmux.github.io/
 endef
 

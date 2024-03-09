@@ -20,6 +20,7 @@ PKG_LICENSE_FILES:=LICENSE.txt
 
 PKG_ASLR_PIE:=0
 PKG_BUILD_PARALLEL:=1
+PKG_BUILD_FLAGS:=gc-sections
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -58,12 +59,11 @@ endif
 endef
 
 # Make binary smaller
-TARGET_CFLAGS += -ffunction-sections -fdata-sections -Wl,-z,noexecstack
-TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed -Wl,-z,noexecstack
+TARGET_CFLAGS += -Wl,-z,noexecstack
+TARGET_LDFLAGS += -Wl,--as-needed -Wl,-z,noexecstack
 
 define Package/zerotier/conffiles
 /etc/config/zerotier
-/etc/config/zero/
 endef
 
 define Package/zerotier/install
@@ -76,9 +76,7 @@ ifeq ($(CONFIG_ZEROTIER_ENABLE_SELFTEST),y)
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/zerotier-selftest $(1)/usr/bin/
 endif
 
-	# $(CP) ./files/* $(1)/
-	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) ./files/etc/config/zerotier $(1)/etc/config/zerotier
+	$(CP) ./files/* $(1)/
 endef
 
 $(eval $(call BuildPackage,zerotier))

@@ -44,9 +44,7 @@ define Package/gg/description
 endef
 
 define Package/gg/conffiles
-/root/.config/gg/config.toml
 /root/.ggconfig.toml
-/etc/ggconfig.toml
 endef
 
 $(eval $(call GoBinPackage,gg))

@@ -8,20 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libxml2
-PKG_VERSION:=2.9.14
-PKG_RELEASE:=1
+PKG_VERSION:=2.10.3
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@GNOME/libxml2/$(basename $(PKG_VERSION))
-PKG_HASH:=60d74a257d1ccec0475e749cba2f21559e48139efba6ff28224357c7c798dfee
+PKG_HASH:=5d2cc3d78bec3dbe212a9d7fa629ada25a7da928af432c93060ff5c17ee28a9c
 
+PKG_MAINTAINER:=Michael Heimpold <mhei@heimpold.de>
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:xmlsoft:libxml2
 
 PKG_MAINTAINER:=Michael Heimpold <mhei@heimpold.de>
 
-PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=0
 
@@ -77,7 +77,6 @@ CONFIGURE_ARGS += \
 	--with-c14n \
 	--without-catalog \
 	--with-debug \
-	--without-docbook \
 	--with-html \
 	--without-ftp \
 	--without-http \
@@ -100,15 +99,16 @@ CONFIGURE_ARGS += \
 	--with-xpath \
 	--with-xptr \
 	--with-zlib=$(STAGING_DIR)/usr \
+	--with-iconv$(if $(ICONV_PREFIX),="$(ICONV_PREFIX)") \
 	--without-lzma
 
 HOST_CONFIGURE_ARGS += \
-	--enable-shared \
+	--disable-shared \
 	--enable-static \
+	--with-pic \
 	--with-c14n \
 	--without-catalog \
 	--with-debug \
-	--without-docbook \
 	--with-html \
 	--without-ftp \
 	--without-http \

@@ -21,8 +21,11 @@ set_driver_values() {
 	for varname in "$@"; do
 		local value
 		json_get_var value "$varname"
-
-		[ -n "$value" ] && echo "$value" > /sys/class/net/"$link"/bonding/"$varname"
+		[ "$varname" = 'num_grat_arp__num_unsol_na' ] && [ ! -f /sys/class/net/"$link"/bonding/"$varname" ] && {
+				[ -n "$value" ] && echo "$value" > /sys/class/net/"$link"/bonding/num_grat_arp
+				[ -n "$value" ] && echo "$value" > /sys/class/net/"$link"/bonding/num_unsol_na
+		}
+		[ -n "$value" ] && [ -f /sys/class/net/"$link"/bonding/"$varname" ] && echo "$value" > /sys/class/net/"$link"/bonding/"$varname"
 	done
 }
 
@@ -90,7 +93,7 @@ proto_bonding_add_slave() {
 
 proto_bonding_setup() {
 	local cfg="$1"
-	local link="bonding-$cfg"
+	local link="bond-$cfg"
 
 	# Check for loaded kernel bonding driver (/sys/class/net/bonding_masters exists)
 	[ -f "$BONDING_MASTERS" ] || {
@@ -111,7 +114,7 @@ proto_bonding_setup() {
 
 		802.3ad)
 			echo "$bonding_policy" > /sys/class/net/"$link"/bonding/mode
-			set_driver_values min_links ad_actor_sys_prio ad_actor_system ad_select lacp_rate
+			set_driver_values min_links ad_actor_sys_prio ad_actor_system ad_select lacp_rate xmit_hash_policy
 		;;
 
 		balance-rr)
@@ -208,7 +211,7 @@ proto_bonding_setup() {
 
 proto_bonding_teardown() {
 	local cfg="$1"
-	local link="bonding-$cfg"
+	local link="bond-$cfg"
 
 	# Check for loaded kernel bonding driver (/sys/class/net/bonding_masters exists)
 	[ -f "$BONDING_MASTERS" ] || {

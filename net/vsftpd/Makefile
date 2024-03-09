@@ -27,7 +27,6 @@ define Package/vsftpd/Default
   CATEGORY:=Network
   TITLE:=Fast and secure FTP server
   URL:=https://security.appspot.com/vsftpd.html
-  DEPENDS:=+libuci
 endef
 
 
@@ -60,8 +59,6 @@ else
 endif
 
 TARGET_CFLAGS += -D_GNU_SOURCE -include fcntl.h
-TARGET_CFLAGS += -ffunction-sections -fdata-sections -flto
-TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed,--no-undefined,--no-allow-shlib-undefined
 
 ifeq ($(BUILD_VARIANT),notls)
  define Build/Compile
@@ -90,15 +87,10 @@ endif
 define Package/vsftpd/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(PKG_NAME) $(1)/usr/sbin/
-	$(INSTALL_BIN) ./files/$(PKG_NAME)_wrapper $(1)/usr/sbin/
-	$(INSTALL_BIN) ./files/$(PKG_NAME)_prepare $(1)/usr/sbin/
-	#$(INSTALL_DIR) $(1)/etc
-	#$(INSTALL_CONF) ./files/$(PKG_NAME).conf $(1)/etc/$(PKG_NAME).conf
-	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_BIN) ./files/vsftpd.uci $(1)/etc/config/vsftpd
+	$(INSTALL_DIR) $(1)/etc
+	$(INSTALL_CONF) ./files/$(PKG_NAME).conf $(1)/etc/$(PKG_NAME).conf
 	$(INSTALL_DIR) $(1)/etc/init.d
-	#$(INSTALL_BIN) ./files/$(PKG_NAME).init $(1)/etc/init.d/$(PKG_NAME)
-	$(INSTALL_BIN) ./files/$(PKG_NAME)-uci.init $(1)/etc/init.d/$(PKG_NAME)
+	$(INSTALL_BIN) ./files/$(PKG_NAME).init $(1)/etc/init.d/$(PKG_NAME)
 	$(INSTALL_DIR) $(1)/etc/vsftpd
 endef
 

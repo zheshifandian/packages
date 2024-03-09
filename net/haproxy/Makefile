@@ -10,12 +10,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=haproxy
-PKG_VERSION:=2.2.29
-PKG_RELEASE:=1
+PKG_VERSION:=2.6.6
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://www.haproxy.org/download/2.2/src
-PKG_HASH:=1e41f49674fbf5663b55c5f7919a7d05e480730653f2bcdec384b8836efc1fb0
+PKG_SOURCE_URL:=https://www.haproxy.org/download/2.6/src
+PKG_HASH:=d0c80c90c04ae79598b58b9749d53787f00f7b515175e7d8203f2796e6a6594d
 
 PKG_MAINTAINER:=Thomas Heil <heil@terminal-consulting.de>, \
 		Christian Lachner <gladiac@gmail.com>
@@ -78,10 +78,16 @@ $(call Package/haproxy/Default/description)
  This package is built without SSL support.
 endef
 
+TARGET=linux-glibc
 ENABLE_LUA:=y
 
 ifeq ($(CONFIG_USE_UCLIBC),y)
+	ADDON+=USE_BACKTRACE=
 	ADDON+=USE_LIBCRYPT=
+endif
+
+ifeq ($(CONFIG_USE_MUSL),y)
+	TARGET=linux-musl
 endif
 
 ifeq ($(BUILD_VARIANT),ssl)
@@ -90,22 +96,19 @@ ifeq ($(BUILD_VARIANT),ssl)
 endif
 
 define Build/Compile
-	$(MAKE) TARGET=linux-glibc -C $(PKG_BUILD_DIR) \
+	$(MAKE) TARGET=$(TARGET) -C $(PKG_BUILD_DIR) \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
 		CC="$(TARGET_CC)" \
 		PCREDIR="$(STAGING_DIR)/usr/" \
 		USE_LUA=1 LUA_LIB_NAME="lua5.3" LUA_INC="$(STAGING_DIR)/usr/include/lua5.3" LUA_LIB="$(STAGING_DIR)/usr/lib" \
 		SMALL_OPTS="-DBUFSIZE=16384 -DMAXREWRITE=1030 -DSYSTEM_MAXCONN=165530" \
-		USE_LINUX_TPROXY=1 USE_LINUX_SPLICE=1 USE_TFO=1 USE_NS=1 \
-		USE_ZLIB=1 USE_PCRE=1 USE_PCRE_JIT=1 USE_GETADDRINFO=1 \
-		USE_THREAD=1 USE_PTHREAD_PSHARED=1 \
+		USE_ZLIB=1 USE_PCRE=1 USE_PCRE_JIT=1 USE_PTHREAD_PSHARED=1 USE_LIBATOMIC=1 USE_PROMEX=1 \
 		VERSION="$(PKG_VERSION)" SUBVERS="-$(PKG_RELEASE)" \
 		VERDATE="$(shell date -d @$(SOURCE_DATE_EPOCH) '+%Y/%m/%d')" IGNOREGIT=1 \
-		$(ADDON) USE_BACKTRACE= \
-		CFLAGS="$(TARGET_CFLAGS) -fno-strict-aliasing -Wdeclaration-after-statement -fwrapv -Wno-format-truncation -Wno-unused-label -Wno-sign-compare -Wno-unused-parameter -Wno-old-style-declaration -Wno-ignored-qualifiers -Wno-clobbered -Wno-missing-field-initializers -Wno-implicit-fallthrough -Wno-stringop-overflow -Wno-cast-function-type -Wtype-limits -Wshift-negative-value -Wshift-overflow=2 -Wduplicated-cond -Wnull-dereference" \
+		$(ADDON) \
+		CFLAGS="$(TARGET_CFLAGS) -fno-strict-aliasing -Wdeclaration-after-statement -Wno-unused-label -Wno-sign-compare -Wno-unused-parameter -Wno-clobbered -Wno-missing-field-initializers -Wno-cast-function-type -Wno-address-of-packed-member -Wtype-limits -Wshift-negative-value -Wshift-overflow=2 -Wduplicated-cond -Wnull-dereference -fwrapv -fasynchronous-unwind-tables -Wno-null-dereference" \
 		LD="$(TARGET_CC)" \
-		LDFLAGS="$(TARGET_LDFLAGS) -latomic" \
-		EXTRA_OBJS="contrib/prometheus-exporter/service-prometheus.o"
+		LDFLAGS="$(TARGET_LDFLAGS)"
 
 	$(MAKE_VARS) $(MAKE) -C $(PKG_BUILD_DIR) \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
@@ -114,12 +117,12 @@ define Build/Compile
 		$(MAKE_FLAGS) \
 		install
 
-	$(MAKE_VARS) $(MAKE) -C $(PKG_BUILD_DIR)/contrib/halog \
+	$(MAKE_VARS) $(MAKE) -C $(PKG_BUILD_DIR) \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
-		$(MAKE_FLAGS) \
-		OPTIMIZE="$(TARGET_CFLAGS)" \
-		ADDLIB="-lcrypto" \
-		halog
+		CC="$(TARGET_CC)" \
+		CFLAGS="$(TARGET_CFLAGS) -Wno-address-of-packed-member" \
+		LDFLAGS="$(TARGET_LDFLAGS)" \
+		admin/halog/halog
 endef
 
 define Package/haproxy/install
@@ -146,7 +149,7 @@ endef
 
 define Package/halog/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/contrib/halog/halog $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/admin/halog/halog $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,haproxy))

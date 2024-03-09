@@ -8,20 +8,18 @@ USE_PROCD=1
 PROG=/usr/sbin/lighttpd
 
 validate_conf() {
-	$PROG -tt -f /etc/lighttpd/lighttpd.conf >/dev/null || {
-		echo 1>&2 "lighttpd.conf validation failed"
+	$PROG -tt -f /etc/lighttpd/lighttpd.conf >/dev/null 2>&1 || {
+		echo "validation failed"
 		return 1
 	}
 }
 
 start_service() {
 	user_exists http || user_add http
-	for i in /var/log/lighttpd /var/lib/lighttpd /var/cache/lighttpd; do
-		[ -d "$i" ] || {
-			mkdir -m 0775 -p "$i"
-			chgrp www-data "$i"
-		}
-	done
+	[ -d /var/log/lighttpd ] || {
+		mkdir -m 0775 -p /var/log/lighttpd
+		chgrp www-data /var/log/lighttpd
+	}
 
 	validate_conf || exit 1
 
@@ -36,7 +34,6 @@ service_triggers() {
 }
 
 reload_service() {
-	validate_conf || exit 1
 	# lighttpd graceful restart (SIGUSR1)
 	procd_send_signal lighttpd '*' USR1
 }

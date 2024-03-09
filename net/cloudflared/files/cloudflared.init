@@ -31,7 +31,6 @@ start_service() {
 	append_param_arg "logfile"
 
 	procd_append_param command "run"
-	append_param_arg "token"
 
 	procd_set_param respawn
 	procd_set_param stderr 1

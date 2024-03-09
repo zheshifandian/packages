@@ -26,7 +26,7 @@ PKG_BUILD_PARALLEL:=1
 include $(INCLUDE_DIR)/package.mk
 
 define Package/lm-sensors/Default
-  DEPENDS:=+sysfsutils $(ICONV_DEPENDS)
+  DEPENDS:=+sysfsutils
   URL:=https://hwmon.wiki.kernel.org/lm_sensors
 endef
 
@@ -123,6 +123,6 @@ define Package/libsensors/install
 	$(CP) $(PKG_BUILD_DIR)/lib/libsensors.so* $(1)/usr/lib
 endef
 
+$(eval $(call BuildPackage,libsensors))
 $(eval $(call BuildPackage,lm-sensors))
 $(eval $(call BuildPackage,lm-sensors-detect))
-$(eval $(call BuildPackage,libsensors))

@@ -6,40 +6,21 @@ set -e
 
 CACHE_DOMAINS_SRC="https://api.github.com/repos/uklans/cache-domains/tarball/master"
 CACHE_DOMAINS_DIR="/var/cache-domains"
-CACHE_DOMAINS_CONF_FILE="${CACHE_DOMAINS_DIR}/lancache.conf"
+CACHE_DOMAINS_HOSTS_DIR="${CACHE_DOMAINS_DIR}/scripts/output/dnsmasq/hosts"
 CONFIG_FILE="/etc/cache-domains.json"
 
-dnsmasq_conf() {
-	local I=0
-	local DNSMASQ_CONF_DIR
-	local DNSMASQ_CONF_FILE
+uci_changes() {
+	local PACKAGE="$1"
+	local STATE="$2"
 
-	while uci_get "dhcp" "@dnsmasq[${I}]" > /dev/null; do
-		DNSMASQ_CONF_DIR="$(uci_get "dhcp" "@dnsmasq[${I}]" "confdir" "/tmp/dnsmasq.d" || :)"
-		DNSMASQ_CONF_FILE="${DNSMASQ_CONF_DIR}/$(basename "${CACHE_DOMAINS_CONF_FILE}")"
-
-		case ${1} in
-			add)
-				ln -sf "${CACHE_DOMAINS_CONF_FILE}" "${DNSMASQ_CONF_FILE}"
-				;;
-			remove)
-				rm -f "${DNSMASQ_CONF_FILE}"
-				;;
-			*)
-				echo "ERROR: Invalid action '${1}' for dnsmasq_conf()"
-				return 1
-				;;
-		esac
-
-		I=$((${I} + 1))
-	done
-
-	/etc/init.d/dnsmasq "restart"
+	CHANGES=$(/sbin/uci ${UCI_CONFIG_DIR:+-c ${UCI_CONFIG_DIR}} ${STATE:+-P ${STATE}} -q changes "${PACKAGE}" | wc -l)
+	return "${CHANGES}"
 }
 
 configure() {
 	local INITIAL_DIR
-	local SOURCE_DIR
+	local I=0
+
 	mkdir -p "${CACHE_DOMAINS_DIR}"
 	rm -fr "${CACHE_DOMAINS_DIR:?}/"*
 
@@ -48,26 +29,54 @@ configure() {
 		echo "ERROR: Could not retrieve ${CACHE_DOMAINS_SRC}"
 		exit 1
 	fi
-	SOURCE_DIR="${CACHE_DOMAINS_DIR}/$(ls "${CACHE_DOMAINS_DIR}")"
+
+	# move files out of versioned directory
+	mv "${CACHE_DOMAINS_DIR}/"*"/"* "${CACHE_DOMAINS_DIR}/"
 
 	if [ ! -f "${CONFIG_FILE}" ]; then
-		cp "${SOURCE_DIR}/scripts/config.example.json" "${CONFIG_FILE}"
+		cp "${CACHE_DOMAINS_DIR}/scripts/config.example.json" "${CONFIG_FILE}"
 		echo "Using example config file ${CONFIG_FILE}"
 	fi
 
 	INITIAL_DIR="$(pwd)"
-	cd "${SOURCE_DIR}/scripts/"
+	cd "${CACHE_DOMAINS_DIR}/scripts/"
 	cp "${CONFIG_FILE}" "config.json"
 	./create-dnsmasq.sh > /dev/null
-	cat "./output/dnsmasq/"*".conf" > "${CACHE_DOMAINS_CONF_FILE}"
+	rm "config.json" "${CACHE_DOMAINS_HOSTS_DIR}/../lancache.conf"
 	cd "${INITIAL_DIR}"
-	rm -fr "${SOURCE_DIR}"
 
-	dnsmasq_conf add
+	while uci_get "dhcp" "@dnsmasq[${I}]" > /dev/null; do
+		if uci_changes "dhcp"; then
+			uci_remove_list	"dhcp" "@dnsmasq[${I}]" "addnhosts" "${CACHE_DOMAINS_HOSTS_DIR}"
+			uci_add_list	"dhcp" "@dnsmasq[${I}]" "addnhosts" "${CACHE_DOMAINS_HOSTS_DIR}"
+			uci_commit		"dhcp"
+		else
+			echo "ERROR: Unexpected changes in the dhcp configuration, commit changes and try again"
+			exit 1
+		fi
+
+		I=$((${I} + 1))
+	done
+
+	/etc/init.d/dnsmasq "restart"
 }
 
 cleanup() {
-	dnsmasq_conf remove
+	local I=0
+
+	while uci_get "dhcp" "@dnsmasq[${I}]" > /dev/null; do
+		if uci_changes "dhcp"; then
+			uci_remove_list	"dhcp" "@dnsmasq[${I}]" "addnhosts" "${CACHE_DOMAINS_HOSTS_DIR}"
+			uci_commit		"dhcp"
+		else
+			echo "ERROR: Unexpected changes in the dhcp configuration, commit changes and try again"
+			exit 1
+		fi
+
+		I=$((${I} + 1))
+	done
+
+	/etc/init.d/dnsmasq "restart"
 }
 
 case ${1} in

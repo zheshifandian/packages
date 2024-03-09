@@ -138,10 +138,6 @@ define perlmod/Compile
 	) 9> $(TMP_DIR)/.perlmod-perl.flock
 endef
 
-define perlmod/FixShebang
-	$(SED) "1"'!'"b;s,^#"'!'".*perl.*,#"'!'"/usr/bin/perl," -i --follow-symlinks $(1)
-endef
-
 define perlmod/Install/NoStrip
 	$(INSTALL_DIR) $(strip $(1))$(PERL_SITELIB)
 	(cd $(PKG_INSTALL_DIR)$(PERL_SITELIB) && \

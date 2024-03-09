@@ -9,8 +9,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bind
-PKG_VERSION:=9.18.16
-PKG_RELEASE:=1
+PKG_VERSION:=9.18.11
+PKG_RELEASE:=3
 USERID:=bind=57:bind=57
 
 PKG_MAINTAINER:=Noah Meyerhans <frodo@morgul.net>
@@ -22,7 +22,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:= \
 	https://www.mirrorservice.org/sites/ftp.isc.org/isc/bind9/$(PKG_VERSION) \
 	https://ftp.isc.org/isc/bind9/$(PKG_VERSION)
-PKG_HASH:=c88234fe07ee75c3c8a9e59152fee64b714643de8e22cf98da3db4d0b57e0775
+PKG_HASH:=8ff3352812230cbcbda42df87cad961f94163d3da457c5e4bef8057fd5df2158
 
 PKG_FIXUP:=autoreconf
 PKG_REMOVE_FILES:=aclocal.m4 libtool.m4
@@ -31,15 +31,18 @@ PKG_INSTALL:=1
 PKG_USE_MIPS16:=0
 PKG_BUILD_PARALLEL:=1
 
-PKG_BUILD_DEPENDS:=nghttp2
-
 PKG_CONFIG_DEPENDS := \
 	CONFIG_BIND_LIBJSON \
-	CONFIG_BIND_LIBXML2
+	CONFIG_BIND_LIBXML2 \
+	CONFIG_BIND_ENABLE_DOH \
+	CONFIG_BIND_ENABLE_GSSAPI
 
 PKG_BUILD_DEPENDS += BIND_LIBXML2:libxml2 BIND_LIBJSON:libjson-c
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/nls.mk
+
+DISABLE_NLS:=
 
 define Package/bind/Default
   SECTION:=net
@@ -58,7 +61,9 @@ define Package/bind-libs
 	+libpthread \
 	+libatomic \
 	+libuv \
-	+libnghttp2 \
+	+BIND_ENABLE_DOH:libnghttp2 \
+	+BIND_ENABLE_GSSAPI:krb5-libs \
+	+BIND_ENABLE_GSSAPI:libcomerr \
 	+BIND_LIBXML2:libxml2 \
 	+BIND_LIBJSON:libjson-c
   TITLE:=bind shared libraries
@@ -95,7 +100,8 @@ define Package/bind-tools
 	+bind-nslookup \
 	+bind-dnssec \
 	+bind-host \
-	+bind-rndc
+	+bind-rndc \
+	+bind-ddns-confgen
 endef
 
 define Package/bind-rndc
@@ -130,6 +136,11 @@ define Package/bind-nslookup
 	  200:/usr/bin/nslookup:/usr/libexec/nslookup-bind
 endef
 
+define Package/bind-ddns-confgen
+  $(call Package/bind/Default)
+  TITLE+= administration tools (ddns-confgen and tsig-keygen only)
+endef
+
 export BUILD_CC="$(TARGET_CC)"
 
 TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
@@ -137,12 +148,9 @@ TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
 CONFIGURE_ARGS += \
 	--disable-geoip \
 	--with-openssl="$(STAGING_DIR)/usr" \
-	--with-libtool \
 	--without-lmdb \
 	--enable-epoll \
-	--without-gssapi \
 	--without-readline \
-	--without-python \
 	--sysconfdir=/etc/bind
 
 ifdef CONFIG_BIND_LIBJSON
@@ -160,6 +168,22 @@ ifdef CONFIG_BIND_LIBXML2
 else
 	CONFIGURE_ARGS += \
 		--with-libxml2=no
+endif
+
+ifdef CONFIG_BIND_ENABLE_DOH
+	CONFIGURE_ARGS += \
+		--enable-doh
+else
+	CONFIGURE_ARGS += \
+		--disable-doh
+endif
+
+ifdef CONFIG_BIND_ENABLE_GSSAPI
+	CONFIGURE_ARGS += \
+		--with-gssapi
+else
+	CONFIGURE_ARGS += \
+		--without-gssapi
 endif
 
 CONFIGURE_VARS += \
@@ -259,6 +283,12 @@ define Package/bind-nslookup/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/nslookup $(1)/usr/libexec/nslookup-bind
 endef
 
+define Package/bind-ddns-confgen/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/ddns-confgen $(1)/usr/sbin/ddns-confgen
+	$(LN) -s ddns-confgen $(1)/usr/sbin/tsig-keygen
+endef
+
 $(eval $(call BuildPackage,bind-libs))
 $(eval $(call BuildPackage,bind-server))
 $(eval $(call BuildPackage,bind-server-filter-aaaa))
@@ -270,3 +300,4 @@ $(eval $(call BuildPackage,bind-dnssec))
 $(eval $(call BuildPackage,bind-host))
 $(eval $(call BuildPackage,bind-dig))
 $(eval $(call BuildPackage,bind-nslookup))
+$(eval $(call BuildPackage,bind-ddns-confgen))

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2017 OpenWrt.org
+# Copyright (C) 2006-2020 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bandwidthd
 PKG_VERSION:=2.0.1-35
-PKG_RELEASE:=3
+PKG_RELEASE:=7
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/NethServer/bandwidthd/tar.gz/$(PKG_VERSION)?
@@ -48,14 +48,14 @@ define Package/bandwidthd-sqlite
 $(call Package/bandwidthd/Default)
   TITLE += (with sqlite enabled)
   VARIANT:=sqlite
-  DEPENDS:=+libgd +libpcap +libsqlite3 +php7 +php7-cgi +php7-mod-gd +php7-mod-pdo +php7-mod-pdo-sqlite
+  DEPENDS:=+libgd +libpcap +libsqlite3 +php8 +php8-cgi +php8-mod-gd +php8-mod-pdo +php8-mod-pdo-sqlite
 endef
 
 define Package/bandwidthd-php
 $(call Package/bandwidthd/Default)
   TITLE = PHP files to graph bandwidthd data from postgresql
   VARIANT:=php
-  DEPENDS:=+libpcre +libxml2 +php7 +php7-cgi +php7-mod-pgsql +php7-mod-gd
+  DEPENDS:=+libpcre +libxml2 +php8 +php8-cgi +php8-mod-pgsql +php8-mod-gd
 endef
 
 define Package/bandwidthd/description
@@ -139,7 +139,7 @@ CONFIGURE_ARGS += \
 endif
 
 EXTRA_CFLAGS+= $(TARGET_CPPFLAGS) -fgnu89-inline
-EXTRA_LDFLAGS+= $(TARGET_LDFLAGS) -Wl,-rpath-link,$(STAGING_DIR)/usr/lib
+EXTRA_LDFLAGS+= $(TARGET_LDFLAGS)
 
 define Package/bandwidthd/install
 	$(INSTALL_DIR) $(1)/usr/sbin

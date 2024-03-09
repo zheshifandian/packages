@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ibrcommon
 PKG_VERSION:=1.0.1
-PKG_RELEASE:=7
+PKG_RELEASE:=9
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://www.ibr.cs.tu-bs.de/projects/ibr-dtn/releases
@@ -20,18 +20,19 @@ PKG_LICENSE:=Apache-2.0
 PKG_INSTALL:=1
 PKG_FIXUP:=libtool
 
-include $(INCLUDE_DIR)/uclibc++.mk
 include $(INCLUDE_DIR)/package.mk
 
 define Package/ibrcommon
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=$(CXX_DEPENDS) +librt +libnl +libopenssl
+  DEPENDS:=+libstdcpp +librt +libnl +libopenssl
   TITLE:=IBR Common C++ Library
 endef
 
 CONFIGURE_ARGS += \
 	--with-openssl
+
+TARGET_CXXFLAGS += -std=c++11
 
 define Package/ibrcommon/description
  A library with common functions for C++.

@@ -6,20 +6,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=snort3
-PKG_VERSION:=3.1.0.0
-PKG_RELEASE:=3
+PKG_VERSION:=3.1.70.0
+PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://www.snort.org/downloads/snortplus/
-PKG_HASH:=c4e2e78e3afa879d7e35e482afe42a6c4b96ed26198a9979edf7953b5151ccbf
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE:=$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://github.com/snort3/snort3/archive/refs/tags/
+PKG_HASH:=4917f2631d033383ca553002f5688b61df507f5c809b9ba62abceca45a7554ad
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org>
 PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:snort:snort
-
-PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -28,7 +25,7 @@ define Package/snort3
   SUBMENU:=Firewall
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=+libstdcpp +libdaq3 +libdnet +libopenssl +libpcap +libpcre +libpthread +libuuid +zlib +libhwloc +libtirpc +luajit
+  DEPENDS:=+libstdcpp +libdaq3 +libdnet +libopenssl +libpcap +libpcre +libpthread +libuuid +zlib +libhwloc +libtirpc +luajit +libatomic
   TITLE:=Lightweight Network Intrusion Detection System
   URL:=http://www.snort.org/
   MENU:=1
@@ -47,6 +44,7 @@ CMAKE_OPTIONS += \
 	-DENABLE_STATIC_DAQ:BOOL=NO \
 	-DDAQ_INCLUDE_DIR=$(STAGING_DIR)/usr/include/daq3 \
 	-DDAQ_LIBRARIES_DIR_HINT:PATH=$(STAGING_DIR)/usr/lib/daq3 \
+	-DFLEX_INCLUDES:PATH=$(STAGING_DIR_HOST)/include \
 	-DENABLE_COREFILES:BOOL=NO \
 	-DENABLE_GDB:BOOL=NO \
 	-DMAKE_DOC:BOOL=NO \
@@ -80,11 +78,11 @@ define Package/snort3/install
 
 	$(INSTALL_DIR) $(1)/usr/lib/snort
 	$(CP) \
-		$(PKG_INSTALL_DIR)/usr/lib/snort/daqs/daq_hext.so \
+		$(PKG_INSTALL_DIR)/usr/lib/snort/daq/daq_hext.so \
 		$(1)/usr/lib/snort/
 
 	$(CP) \
-		$(PKG_INSTALL_DIR)/usr/lib/snort/daqs/daq_file.so \
+		$(PKG_INSTALL_DIR)/usr/lib/snort/daq/daq_file.so \
 		$(1)/usr/lib/snort/
 
 	$(INSTALL_DIR) $(1)/usr/share/lua
@@ -95,6 +93,9 @@ define Package/snort3/install
 	$(INSTALL_DIR) $(1)/etc/snort
 	$(INSTALL_CONF) \
 		$(PKG_INSTALL_DIR)/usr/etc/snort/*.lua \
+		$(1)/etc/snort
+	$(INSTALL_CONF) \
+		$(PKG_INSTALL_DIR)/usr/etc/snort/file_magic.rules \
 		$(1)/etc/snort
 
 	$(INSTALL_DIR) $(1)/etc/init.d

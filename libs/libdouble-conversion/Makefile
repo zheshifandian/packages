@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libdouble-conversion
-PKG_VERSION:=3.1.5
-PKG_RELEASE:=3
+PKG_VERSION:=3.3.0
+PKG_RELEASE:=4
 
 PKG_SOURCE:=double-conversion-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/google/double-conversion/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=a63ecb93182134ba4293fd5f22d6e08ca417caafa244afaa751cbfddf6415b13
+PKG_HASH:=skip
 
 HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/double-conversion-$(PKG_VERSION)
 PKG_BUILD_DIR:=$(BUILD_DIR)/double-conversion-$(PKG_VERSION)
@@ -22,6 +22,7 @@ PKG_MAINTAINER:=
 PKG_LICENSE:=BSD-3c
 PKG_LICENSE_FILES:=COPYING LICENSE
 
+PKG_BUILD_FLAGS:=gc-sections lto
 CMAKE_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -48,8 +49,7 @@ CMAKE_OPTIONS += \
 	-DBUILD_SHARED_LIBS=ON \
 	-DBUILD_TESTING=OFF
 
-TARGET_CXXFLAGS += -ffunction-sections -fdata-sections -fno-rtti -flto
-TARGET_LDFLAGS += -Wl,--gc-sections
+TARGET_CXXFLAGS += -fno-rtti
 
 define Package/libdouble-conversion/install
 	$(INSTALL_DIR) $(1)/usr/lib

@@ -7,16 +7,16 @@
 
 include $(TOPDIR)/rules.mk
 PKG_NAME:=frr
-PKG_VERSION:=7.5
-PKG_RELEASE:=4
-PKG_SOURCE_DATE:=2021-02-05
+PKG_VERSION:=8.4.2
+PKG_RELEASE:=1
+PKG_SOURCE_DATE:=2023-02-17
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_SOURCE_DATE).tar.gz
-PKG_SOURCE_VERSION:=20b35e4c3386de798f3b0cb9f2a7e6b04d995485
+PKG_SOURCE_VERSION:=410d78b7a4f2c8b4d4c3736c6d6cdb710287ca80
 PKG_SOURCE_URL:=https://codeload.github.com/FRRouting/frr/tar.gz/$(PKG_SOURCE_VERSION)?
 
 
-PKG_HASH:=f3b4a4ce43ad60fcf4b908dc4467cbc9dae277b5829489b3d221913e043dd250
+PKG_HASH:=1334b050ea3d4144efeb7bdfe9c6976ebc91744810c5d8a7381a53fac2877ea9
 PKG_MAINTAINER:=Lucian Cristian <lucian.cristian@gmail.com>
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_SOURCE_VERSION)
@@ -35,6 +35,7 @@ PKG_DAEMON_AVAILABLE:= \
 	nhrpd \
 	ospfd \
 	ospf6d \
+	pathd \
 	pbrd \
 	pimd \
 	ripd \
@@ -121,6 +122,12 @@ define Package/frr-zebra
   CONFLICTS:=quagga-zebra
 endef
 
+define Package/frr-pythontools
+  $(call Package/frr/Default)
+  TITLE:=Python reload tool
+  DEPENDS+=+frr-libfrr +python3-base +python3-light +python3-logging
+endef
+
 ##Migrate from quagga
 ##should test file exists and link in frr folder
 #define Package/frr/postinst
@@ -138,6 +145,8 @@ define BuildDaemon
 	TITLE:= $(1) routing engine
 	DEPENDS+=frr-libfrr $(2)
     endef
+#	if [ "$(1)" == "bfdd" ]; then \
+#	export HAVE_BFDD == 1 ; fi
 
     define Package/frr-$(1)/install
 	$(INSTALL_DIR) $$(1)/usr/sbin
@@ -164,6 +173,7 @@ define Host/Configure
 	$(SED) 's/$$$$(MAKE) $$$$(AM_MAKEFLAGS) install-am/# $$$$(MAKE) $$$$(AM_MAKEFLAGS) install-am/' $(HOST_BUILD_DIR)/Makefile.in
 endef
 
+HOST_CPPFLAGS += -I$(STAGING_DIR_HOST)/include/libelf
 HOST_CONFIGURE_ARGS+= \
 	--enable-clippy-only
 
@@ -216,6 +226,14 @@ define Package/frr-libfrr/install
 	$(INSTALL_CONF) ./files/{frr.conf,daemons} $(1)/etc/frr/
 endef
 
+
+define Package/frr-pythontools/install
+	$(INSTALL_DIR) $(1)/usr/lib/frr $(1)/usr/sbin $(1)/etc/frr
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/*.py $(1)/usr/lib/frr/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/frr-reload $(1)/usr/sbin/
+	$(INSTALL_CONF) $(PKG_BUILD_DIR)/tools/etc/frr/support_bundle_commands.conf $(1)/etc/frr/
+endef
+
 define Package/frr-vtysh/install
 	$(INSTALL_DIR) $(1)/usr/bin $(1)/etc/frr
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/vtysh $(1)/usr/bin/
@@ -225,6 +243,7 @@ endef
 $(eval $(call HostBuild))
 $(eval $(call BuildPackage,frr))
 $(eval $(call BuildPackage,frr-libfrr))
+$(eval $(call BuildPackage,frr-pythontools))
 $(eval $(call BuildPackage,frr-watchfrr))
 $(eval $(call BuildPackage,frr-zebra))
 $(eval $(call BuildPackage,frr-vtysh))
@@ -238,6 +257,7 @@ $(eval $(call BuildDaemon,ldpd,))
 $(eval $(call BuildDaemon,nhrpd,+libcares))
 $(eval $(call BuildDaemon,ospfd,))
 $(eval $(call BuildDaemon,ospf6d,@IPV6))
+$(eval $(call BuildDaemon,pathd,))
 $(eval $(call BuildDaemon,pbrd,))
 $(eval $(call BuildDaemon,pimd,))
 $(eval $(call BuildDaemon,ripd,))

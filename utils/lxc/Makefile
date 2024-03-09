@@ -16,7 +16,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://linuxcontainers.org/downloads/lxc/
 PKG_HASH:=db242f8366fc63e8c7588bb2017b354173cf3c4b20abc18780debdc48b14d3ef
 
-PKG_MAINTAINER:=Marko Ratkaj <marko.ratkaj@sartura.hr>
+PKG_MAINTAINER:=Marko Ratkaj <markoratkaj@gmail.com>
 PKG_LICENSE:=LGPL-2.1-or-later BSD-2-Clause GPL-2.0
 
 PKG_FIXUP:=autoreconf
@@ -39,7 +39,7 @@ LXC_SCRIPTS += \
 
 DEPENDS_APPLETS = +libpthread +libcap +liblxc
 
-DEPENDS_create = +lxc-configs +lxc-hooks +lxc-templates +flock
+DEPENDS_create = +lxc-configs +lxc-hooks +lxc-templates +flock +getopt
 
 define Package/lxc/Default
   SECTION:=utils
@@ -59,10 +59,6 @@ define Package/lxc-auto
   $(call Package/lxc/Default)
   TITLE:= (initscript)
   DEPENDS+=+lxc-start +lxc-stop
-endef
-
-define Package/lxc-auto/postinst
-[ -n "$${IPKG_INSTROOT}" ] || [ "$${PKG_UPGRADE}" = 1 ] || /etc/init.d/lxc-auto boot
 endef
 
 define Package/lxc-auto/description
@@ -144,8 +140,7 @@ CONFIGURE_ARGS += \
 	--disable-selinux \
 	--$(if $(CONFIG_LXC_SECCOMP),en,dis)able-seccomp \
 	--enable-capabilities \
-	--disable-examples \
-	--with-runtime-path=/var/run
+	--disable-examples
 
 ifdef CONFIG_USE_MIPS16
   TARGET_CFLAGS += -minterlink-mips16
