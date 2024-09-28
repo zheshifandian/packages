@@ -8,20 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=git-lfs
-PKG_VERSION:=2.13.2
+PKG_VERSION:=3.5.1
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/git-lfs/git-lfs/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=782e6275df9ca370730945112e16a0b8c64b9819f0b61fae52ba1ebbc8dce2d5
+PKG_SOURCE:=$(PKG_NAME)-v$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://github.com/git-lfs/git-lfs/releases/download/v$(PKG_VERSION)
+PKG_HASH:=fc19c7316e80a6ef674aa4e1863561c1263cd4ce0588b9989e4be9461664d752
 
-PKG_MAINTAINER:=Jan Pavlinec <jan.pavlinec@nic.cz>
+PKG_MAINTAINER:=Jan Pavlinec <jan.pavlinec1@gmail.com>
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE.md
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/git-lfs/git-lfs
 
@@ -32,7 +32,7 @@ define Package/git-lfs
   SECTION:=net
   CATEGORY:=Network
   TITLE:=Git Large File Storage
-  URL:=https://git-lfs.github.com
+  URL:=https://git-lfs.com
   DEPENDS:=$(GO_ARCH_DEPENDS) +git
 endef
 

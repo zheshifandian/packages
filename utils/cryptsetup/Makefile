@@ -8,16 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cryptsetup
-PKG_VERSION:=2.5.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=2.7.4
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=@KERNEL/linux/utils/cryptsetup/v2.5
-PKG_HASH:=9184a6ebbd9ce7eb211152e7f741a6c82f2d1cc0e24a84ec9c52939eee0f0542
+PKG_SOURCE_URL:=@KERNEL/linux/utils/cryptsetup/v$(subst $(space),.,$(wordlist 1, 2, $(subst .,$(space),$(PKG_VERSION))))
+PKG_HASH:=dce29903a58f7b774fe61191e7e6de955de0f40d9e27b0028ffcf3438c0e9480
 
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_LICENSE:=GPL-2.0-or-later LGPL-2.1-or-later
 PKG_LICENSE_FILES:=COPYING COPYING.LGPL
+PKG_CPE_ID:=cpe:/a:cryptsetup_project:cryptsetup
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -75,6 +76,7 @@ CONFIGURE_VARS += \
 	LIBSSH_CFLAGS="-I$(STAGING_DIR)/usr/include" \
 	LIBSSH_LIBS="-L$(STAGING_DIR)/usr/lib -lssh"
 
+TARGET_CFLAGS += -D_LARGEFILE64_SOURCE
 TARGET_LDFLAGS += -Wl,--gc-sections $(if $(INTL_FULL),-lintl)
 
 define Build/InstallDev

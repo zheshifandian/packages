@@ -8,16 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openocd
-PKG_SOURCE_VERSION:=v0.11.0-rc1
-PKG_VERSION:=$(PKG_SOURCE_VERSION)
-PKG_RELEASE:=1
+PKG_SOURCE_VERSION:=v0.12.0
+PKG_RELEASE:=3
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_URL:=git://git.code.sf.net/p/openocd/code
-PKG_MIRROR_HASH:=c4a0a6cad821946608c843f557b993e7cfeb0f193e4c0f149ebfbfbfd57054a6
+PKG_SOURCE_URL:=https://git.code.sf.net/p/openocd/code
+PKG_MIRROR_HASH:=a8e0d311b6ebecb6d43b7c75ec59ec3efb0b0a2e424a959a2667975d4acb0829
 
-PKG_LICENSE:=GPL-2.0
+PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=COPYING
 
 PKG_MAINTAINER:=Paul Fertser <fercerpav@gmail.com>
@@ -38,10 +36,10 @@ define Package/openocd
   TITLE:=OpenOCD Utility
   URL:=http://openocd.sf.net/
   DEPENDS:=+libusb-1.0 \
-	+libusb-compat \
 	+libftdi1 \
 	+hidapi \
-	+libgpiod
+	+libgpiod \
+	+libjaylink
 endef
 
 define Package/openocd/description
@@ -65,6 +63,7 @@ endef
 define Build/Prepare
 	$(call Build/Prepare/Default)
 	-$(RM) $(PKG_BUILD_DIR)/guess-rev.sh
+	-$(RM) $(PKG_BUILD_DIR)/jimtcl/configure.ac
 endef
 
 CONFIGURE_ARGS += \
@@ -74,6 +73,10 @@ CONFIGURE_ARGS += \
 	--enable-dummy \
 	--enable-sysfsgpio \
 	--enable-linuxgpiod
+
+ifeq ($(CONFIG_TARGET_bcm27xx),y)
+	CONFIGURE_ARGS += --enable-bcm2835gpio
+endif
 
 TARGET_CFLAGS += -DRELSTR=\\\"-$(PKG_VERSION)-$(PKG_RELEASE)-OpenWrt\\\"
 

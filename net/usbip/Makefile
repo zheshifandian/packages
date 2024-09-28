@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=usbip
-PKG_RELEASE:=13
+PKG_RELEASE:=15
 PKG_LICENSE:=GPL-2.0-only
 
 # Since kernel 2.6.39.1 userspace tools are inside the kernel tree
@@ -52,7 +52,7 @@ endef
 define Package/usbip
   $(call Package/usbip/Default)
   TITLE+= (common)
-  DEPENDS+= +libwrap +kmod-usbip +libudev +USE_GLIBC:libbsd +usbids
+  DEPENDS+= +libwrap +kmod-usbip +libudev +usbids
 endef
 
 define Package/usbip-client
@@ -67,6 +67,10 @@ define Package/usbip-server
   DEPENDS+= usbip +kmod-usbip-server
 endef
 
+define Package/usbip-server/conffiles
+/etc/config/usbipd
+endef
+
 CONFIGURE_PATH:=.
 MAKE_PATH:=.
 LIBTOOL_PATHS:=.
@@ -77,7 +81,6 @@ define Build/Configure
 	$(call Build/Configure/Default)
 endef
 
-CONFIGURE_VARS+= $(if $(CONFIG_USE_GLIBC),LIBS='-lbsd -lpthread')
 CFLAGS+="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include"
 
 define Package/usbip/install
@@ -91,8 +94,10 @@ define Package/usbip-client/install
 endef
 
 define Package/usbip-server/install
-	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/etc/init.d $(1)/etc/config
 	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/usbipd $(1)/usr/sbin/
+	$(INSTALL_BIN) ./files/usbipd.init $(1)/etc/init.d/usbipd
+	$(INSTALL_DATA) ./files/usbipd.conf $(1)/etc/config/usbipd
 endef
 
 $(eval $(call BuildPackage,usbip))

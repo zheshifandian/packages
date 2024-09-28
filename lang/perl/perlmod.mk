@@ -25,6 +25,9 @@ MOD_CFLAGS_PERL:=-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 $(TARGET_CFLAGS) $(T
 ifdef CONFIG_PERL_THREADS
 	MOD_CFLAGS_PERL+= -D_REENTRANT -D_GNU_SOURCE
 endif
+ifdef CONFIG_USE_MUSL
+	MOD_CFLAGS_PERL+= -D_LARGEFILE64_SOURCE
+endif
 
 # Module install prefix
 PERL_SITELIB:=/usr/lib/perl5/$(PERL_VERSION)
@@ -136,10 +139,6 @@ define perlmod/Compile
 		$(1) \
 		install \
 	) 9> $(TMP_DIR)/.perlmod-perl.flock
-endef
-
-define perlmod/FixShebang
-	$(SED) "1"'!'"b;s,^#"'!'".*perl.*,#"'!'"/usr/bin/perl," -i --follow-symlinks $(1)
 endef
 
 define perlmod/Install/NoStrip

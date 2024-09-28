@@ -1,20 +1,21 @@
-# openwisp.org
+# SPDX-Identifier-License: GPL-3.0-only
 #
-# This is free software, licensed under the GNU General Public License v3.
-# See /LICENSE for more information.
+# openwisp.org
+
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openwisp-monitoring
-PKG_RELEASE:=1
+PKG_VERSION:=0.1.1
+PKG_RELEASE:=3
 
 PKG_MAINTAINER:=Federico Capoano <support@openwisp.io>
-PKG_LICENSE:=GPL3.0-or-later
+PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
 
 PKG_SOURCE_URL:=https://github.com/openwisp/openwrt-openwisp-monitoring.git
-PKG_MIRROR_HASH:=ce2ed94d24f68c58320ca700a088471368e1097754be23ad6053842cf0aaa97e
+PKG_MIRROR_HASH:=97ae00b37518919079d894622c664d330bbf0cb0ee1b68c84991b459c1a087ee
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=0.1.1
+PKG_SOURCE_VERSION:=$(PKG_VERSION)
 PKGARCH:=all
 
 include $(INCLUDE_DIR)/package.mk

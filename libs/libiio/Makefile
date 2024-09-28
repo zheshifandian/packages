@@ -8,20 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libiio
-PKG_VERSION:=0.21
-PKG_RELEASE:=4
+PKG_VERSION:=0.25
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/analogdevicesinc/libiio/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=03d13165cbeb83b036743cbd9a10e336c728da162714f39d13250a3d94305cac
+PKG_HASH:=21972599a3c143ab1f98002ad2b3f28f4aff927fde5f677478311cd4e517730c
 
 PKG_LICENSE:=LGPL-2.1
 PKG_LICENSE_FILES:=COPYING.txt
 
 PKG_MAINTAINER:=Michael Heimpold <mhei@heimpold.de>
-
-PKG_BUILD_PARALLEL:=1
-PKG_INSTALL:=1
 
 CMAKE_INSTALL:=1
 
@@ -33,12 +30,12 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_LIBIIO_XML_BACKEND
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/cmake.mk
 include $(INCLUDE_DIR)/nls.mk
+include $(INCLUDE_DIR)/cmake.mk
 
 CMAKE_OPTIONS += -DWITH_DOC=OFF
 CMAKE_OPTIONS += -DENABLE_IPV6=$(if $(CONFIG_IPV6),ON,OFF)
-CMAKE_OPTIONS += -DENABLE_AIO=OFF
+CMAKE_OPTIONS += -DWITH_AIO=OFF
 CMAKE_OPTIONS += -DWITH_LOCAL_BACKEND=$(if $(CONFIG_LIBIIO_LOCAL_BACKEND),ON,OFF)
 CMAKE_OPTIONS += -DWITH_LOCAL_CONFIG=OFF
 CMAKE_OPTIONS += -DWITH_NETWORK_BACKEND=$(if $(CONFIG_LIBIIO_NETWORK_BACKEND),ON,OFF)
@@ -131,6 +128,8 @@ define Build/InstallDev
 
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/libiio.pc $(1)/usr/lib/pkgconfig/
+	$(SED) 's,/usr/include,$$$${prefix}/include,g' $(1)/usr/lib/pkgconfig/libiio.pc
+	$(SED) 's,/usr/lib,$$$${exec_prefix}/lib,g' $(1)/usr/lib/pkgconfig/libiio.pc
 endef
 
 define Package/libiio/install

@@ -13,7 +13,7 @@ PKG_SOURCE:=ack-v$(PKG_VERSION).tar.gz
 PKG_HASH:=ea7caa14f757de083310ed2cba298661ddcca5dee06ec8f18043ea625a79df20
 
 PKG_LICENSE:=Artistic-2.0
-PKG_LICENSE_FILES:=LICENSE.md
+PKG_LICENSE_FILE:=LICENSE.md
 PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/perl/ack-v$(PKG_VERSION)
@@ -52,7 +52,7 @@ endef
 define Package/ack/install
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ack $(1)/usr/bin/
-	$(call perlmod/FixShebang,$(1)/usr/bin/*)
+	$(SED) "1"'!'"b;s,^#"'!'".*perl.*,#"'!'"/usr/bin/perl," -i --follow-symlinks $(1)/usr/bin/ack
 endef
 
 define Package/perl-ack/install

@@ -35,7 +35,8 @@ config_cb() {
 	fi
 }
 
-service_triggers() {
+service_triggers()
+{
 	procd_add_reload_trigger "$NAME"
 }
 

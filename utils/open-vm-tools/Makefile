@@ -8,21 +8,22 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=open-vm-tools
-PKG_VERSION:=11.2.5
+PKG_VERSION:=12.2.0
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-17337674.tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-21223074.tar.gz
 PKG_SOURCE_URL:=https://github.com/vmware/open-vm-tools/releases/download/stable-$(PKG_VERSION)
-PKG_HASH:=d01c9e036536b569ee561e33302e9dad1c2ac27c04f762ebdc3f81791cb44566
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-17337674
+PKG_HASH:=ddc797cb75c435ad03c197ee0753156add148d06aefb14587dd31bff7556479a
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-21223074
 
 PKG_LICENSE:=LGPL-2.1-or-later
 PKG_LICENSE_FILES:=LICENSE
+PKG_CPE_ID:=cpe:/a:vmware:open-vm-tools
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
-PKG_BUILD_DEPENDS:=glib2/host
+PKG_BUILD_DEPENDS:=glib2/host rpcsvc-proto/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
@@ -35,7 +36,12 @@ endef
 
 define Package/open-vm-tools
 $(call Package/open-vm-tools/Default)
-  DEPENDS:=@TARGET_x86 +glib2 +libpthread +libtirpc
+  DEPENDS:=@TARGET_x86 \
+	+glib2 \
+	+libpthread \
+	+libtirpc \
+	+libmspack \
+	+libdnet
   TITLE:=open-vm-tools
   URL:=https://github.com/vmware/open-vm-tools
   MAINTAINER:=Yuhei OKAWA <tochiro.srchack@gmail.com>
@@ -47,7 +53,7 @@ endef
 
 define Package/open-vm-tools-fuse
 $(call Package/open-vm-tools/Default)
-  DEPENDS:=+open-vm-tools +libfuse
+  DEPENDS:=+open-vm-tools +libfuse3
   TITLE:=open-vm-tools-fuse
   MAINTAINER:=Kagurazaka Kotori <kagurazakakotori@gmail.com>
 endef
@@ -58,6 +64,7 @@ endef
 
 CONFIGURE_ARGS+= \
 	--without-icu \
+	--disable-containerinfo \
 	--disable-multimon \
 	--disable-docs \
 	--disable-tests \
@@ -67,24 +74,21 @@ CONFIGURE_ARGS+= \
 	--without-pam \
 	--disable-grabbitmqproxy \
 	--disable-vgauth \
-	--disable-deploypkg \
 	--without-root-privileges \
 	--without-kernel-modules \
-	--without-dnet \
 	--with-tirpc \
 	--without-x \
 	--without-gtk2 \
 	--without-gtk3 \
 	--without-xerces \
-	--enable-resolutionkms=no
+	--enable-resolutionkms=no \
+	--disable-glibc-check
 
-TARGET_LDFLAGS += -liconv
+TARGET_LDFLAGS+=$(if $(ICONV_FULL),-liconv)
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
-ifeq ($(QUILT),)
 	mv $(PKG_BUILD_DIR)/lib/include/poll.h $(PKG_BUILD_DIR)/lib/include/vm_poll.h
-endif
 endef
 
 define Package/open-vm-tools/install
@@ -105,13 +109,14 @@ define Package/open-vm-tools/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/vmware-xferlogs $(1)/bin/
 
 	$(INSTALL_DIR) $(1)/sbin/
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/mount.vmhgfs $(1)/sbin/
 	$(INSTALL_BIN) ./files/shutdown $(1)/sbin/
+	$(INSTALL_BIN) ./files/telinit $(1)/sbin/
 
 	$(INSTALL_DIR) $(1)/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libguestlib.so* $(1)/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libhgfs.so* $(1)/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libvmtools.so* $(1)/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libDeployPkg.so* $(1)/lib/
 
 	$(INSTALL_DIR) $(1)/usr/lib/open-vm-tools/plugins/common/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/open-vm-tools/plugins/common/libhgfsServer.so $(1)/usr/lib/open-vm-tools/plugins/common/
@@ -122,6 +127,7 @@ define Package/open-vm-tools/install
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/open-vm-tools/plugins/vmsvc/libpowerOps.so $(1)/usr/lib/open-vm-tools/plugins/vmsvc/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/open-vm-tools/plugins/vmsvc/libtimeSync.so $(1)/usr/lib/open-vm-tools/plugins/vmsvc/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/open-vm-tools/plugins/vmsvc/libvmbackup.so $(1)/usr/lib/open-vm-tools/plugins/vmsvc/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/open-vm-tools/plugins/vmsvc/libdeployPkgPlugin.so $(1)/usr/lib/open-vm-tools/plugins/vmsvc/
 
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/block/
 	$(INSTALL_BIN) ./files/vmware-scsi.hotplug $(1)/etc/hotplug.d/block/80-vmware-scsi

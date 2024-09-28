@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=chrony
-PKG_VERSION:=4.1
-PKG_RELEASE:=2
+PKG_VERSION:=4.6
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://download.tuxfamily.org/chrony/
-PKG_HASH:=ed76f2d3f9347ac6221a91ad4bd553dd0565ac188cd7490d0801d08f7171164c
+PKG_SOURCE_URL:=https://chrony-project.org/releases/
+PKG_HASH:=9adad4a5014420fc52b695896556fdfb49709dc7cd72d7f688d9eb85d5a274d5
 
 PKG_MAINTAINER:=Miroslav Lichvar <mlichvar0@gmail.com>
 PKG_LICENSE:=GPL-2.0
@@ -21,6 +21,7 @@ PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:tuxfamily:chrony
 
 PKG_BUILD_DEPENDS:=pps-tools
+PKG_BUILD_FLAGS:=lto
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -39,12 +40,13 @@ define Package/chrony
 $(call Package/chrony/Default)
   TITLE+= (without NTS)
   VARIANT:=normal
+  CONFLICTS:=chrony-nts
 endef
 
 define Package/chrony-nts
 $(call Package/chrony/Default)
   TITLE+= (with NTS)
-  DEPENDS+= +libgnutls +ca-bundle
+  DEPENDS+= +PACKAGE_chrony-nts:libgnutls +PACKAGE_chrony-nts:ca-bundle
   VARIANT:=with-nts
 endef
 
@@ -52,9 +54,15 @@ define Package/chrony/description
 	An NTP client and server designed to perform well in a wide range
 	of conditions. It can synchronize the system clock with NTP servers,
 	reference clocks, and manual input using wristwatch and keyboard.
+	This package does NOT include NTS support.
 endef
 
-Package/chrony-nts/description = $(Package/chrony/description)
+define Package/chrony-nts/description
+	An NTP client and server designed to perform well in a wide range
+	of conditions. It can synchronize the system clock with NTP servers,
+	reference clocks, and manual input using wristwatch and keyboard.
+	This package includes NTS support.
+endef
 
 define Package/chrony/conffiles
 /etc/chrony/chrony.conf
@@ -83,6 +91,7 @@ define Package/chrony/install
 	$(INSTALL_DIR) $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/chronyd $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/chronyc $(1)/usr/bin
+	$(INSTALL_BIN) ./files/chrony.ntp-hotplug $(1)/usr/sbin/chrony-hotplug
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/chrony

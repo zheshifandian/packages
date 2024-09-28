@@ -6,7 +6,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=php
-PKG_VERSION:=7.4.33
+PKG_VERSION:=7.4.30
 PKG_RELEASE:=1
 
 PKG_MAINTAINER:=Michael Heimpold <mhei@heimpold.de>
@@ -16,7 +16,7 @@ PKG_CPE_ID:=cpe:/a:php:php
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://www.php.net/distributions/
-PKG_HASH:=924846abf93bc613815c55dd3f5809377813ac62a9ec4eb3778675b82a27b927
+PKG_HASH:=ea72a34f32c67e79ac2da7dfe96177f3c451c3eefae5810ba13312ed398ba70d
 
 PKG_BUILD_PARALLEL:=1
 PKG_USE_MIPS16:=0
@@ -254,7 +254,13 @@ else
 endif
 
 ifneq ($(SDK)$(CONFIG_PACKAGE_php7-mod-iconv),)
-  CONFIGURE_ARGS+= --with-iconv=shared,"$(ICONV_PREFIX)"
+  ifeq ($(CONFIG_BUILD_NLS),y)
+    CONFIGURE_VARS+= iconv_impl_name="gnu_libiconv"
+    CONFIGURE_ARGS+= --with-iconv=shared,"$(ICONV_PREFIX)"
+  else
+    CONFIGURE_VARS+= ac_cv_func_iconv=yes
+    CONFIGURE_ARGS+= --with-iconv=shared
+  endif
 else
   CONFIGURE_ARGS+= --without-iconv
 endif
@@ -471,7 +477,6 @@ endif
 CONFIGURE_VARS+= \
 	ac_cv_c_bigendian_php=$(if $(CONFIG_BIG_ENDIAN),yes,no) \
 	php_cv_cc_rpath="no" \
-	iconv_impl_name="gnu_libiconv" \
 	ac_cv_php_xml2_config_path="$(STAGING_DIR)/host/bin/xml2-config" \
 	ac_cv_u8t_decompose=yes \
 	ac_cv_have_pcre2_jit=no
@@ -630,7 +635,7 @@ $(eval $(call BuildModule,gd,GD graphics,+PACKAGE_php7-mod-gd:libgd-full))
 $(eval $(call BuildModule,gettext,Gettext,+PACKAGE_php7-mod-gettext:libintl-full))
 $(eval $(call BuildModule,gmp,GMP,+PACKAGE_php7-mod-gmp:libgmp))
 $(eval $(call BuildModule,iconv,iConv,$(ICONV_DEPENDS)))
-$(eval $(call BuildModule,imap,IMAP,+PACKAGE_php7-mod-imap:libopenssl +libpam +PACKAGE_php7-mod-imap:uw-imap))
+$(eval $(call BuildModule,imap,IMAP,+PACKAGE_php7-mod-imap:libopenssl +PACKAGE_libpam:libpam +PACKAGE_php7-mod-imap:uw-imap))
 $(eval $(call BuildModule,intl,Internationalization Functions,+PACKAGE_php7-mod-intl:icu +PHP7_FULLICUDATA:icu-full-data))
 $(eval $(call BuildModule,json,JSON))
 $(eval $(call BuildModule,ldap,LDAP,+PACKAGE_php7-mod-ldap:libopenldap +PACKAGE_php7-mod-ldap:libsasl2))

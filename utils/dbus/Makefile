@@ -8,19 +8,22 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dbus
-PKG_VERSION:=1.13.12
+PKG_VERSION:=1.14.10
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://dbus.freedesktop.org/releases/dbus
-PKG_HASH:=7588649b56dd257c6a5f85a8c45aa2dfdf9e99f4de3983710f452081ca43eca6
+PKG_HASH:=ba1f21d2bd9d339da2d4aa8780c09df32fea87998b73da24f49ab9df1e36a50f
 
-PKG_MAINTAINER:=
+PKG_MAINTAINER:=Robert Marko <robimarko@gmail.com>
 PKG_LICENSE:=AFL-2.1
 PKG_CPE_ID:=cpe:/a:freedesktop:dbus
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
+
+PKG_CONFIG_DEPENDS:= \
+	CONFIG_DBUS_VERBOSE
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -28,7 +31,7 @@ define Package/dbus/Default
   SECTION:=utils
   CATEGORY:=Utilities
   TITLE:=Simple interprocess messaging system
-  URL:=http://dbus.freedesktop.org/
+  URL:=https://dbus.freedesktop.org/
 endef
 
 define Package/dbus/Default/description
@@ -73,6 +76,10 @@ $(call Package/dbus/Default/description)
  This package contains D-Bus utilities.
 endef
 
+define Package/dbus/config
+  source "$(SOURCE)/Config.in"
+endef
+
 CONFIGURE_ARGS += \
 	--disable-maintainer-mode \
 	--disable-developer \
@@ -98,7 +105,13 @@ CONFIGURE_ARGS += \
 	--with-system-socket=/var/run/dbus/system_bus_socket \
 	--with-system-pid-file=/var/run/dbus.pid \
 	--with-dbus-user=root \
-	--without-x
+	--without-x \
+	--enable-qt-help=no \
+	--disable-xml-docs
+
+ifeq ($(CONFIG_DBUS_VERBOSE),y)
+  CONFIGURE_ARGS += --enable-verbose-mode
+endif
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
@@ -108,7 +121,7 @@ define Build/InstallDev
 		$(PKG_INSTALL_DIR)/usr/lib/dbus-1.0/include/dbus/*.h \
 		$(1)/usr/lib/dbus-1.0/include/dbus/
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libdbus-1.{so*,la} \
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libdbus-1.so* \
 		$(1)/usr/lib/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/dbus-1.0 $(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
@@ -138,7 +151,9 @@ endef
 
 define Package/dbus-utils/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) 	$(PKG_INSTALL_DIR)/usr/bin/dbus-{monitor,send,update-activation-environment} $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/dbus-monitor $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/dbus-send $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/dbus-test-tool $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,libdbus))

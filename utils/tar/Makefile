@@ -8,20 +8,27 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tar
-PKG_VERSION:=1.32
-PKG_RELEASE:=3
+PKG_VERSION:=1.35
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@GNU/tar
-PKG_HASH:=d0d3ae07f103323be809bc3eac0dcc386d52c5262499fe05511ac4788af1fdd8
+PKG_HASH:=4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16
 
 PKG_MAINTAINER:=Álvaro Fernández Rojas <noltari@gmail.com>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:gnu:tar
 
-PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
+PKG_BUILD_PARALLEL:=1
+PKG_CONFIG_DEPENDS:= \
+	CONFIG_PACKAGE_TAR_POSIX_ACL \
+	CONFIG_PACKAGE_TAR_XATTR \
+	CONFIG_PACKAGE_TAR_BZIP2 \
+	CONFIG_PACKAGE_TAR_GZIP \
+	CONFIG_PACKAGE_TAR_XZ \
+	CONFIG_PACKAGE_TAR_ZSTD
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -53,7 +60,7 @@ define Package/tar/config
 			default y
 
 		config PACKAGE_TAR_GZIP
-			bool "tar: Enable seamless gzip support"
+			bool "tar: Enable seamless gzip support. Needed for sysupgrade."
 			default y
 
 		config PACKAGE_TAR_XZ

@@ -8,18 +8,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libpam
-PKG_VERSION:=1.5.1
+PKG_VERSION:=1.5.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=Linux-PAM-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://github.com/linux-pam/linux-pam/releases/download/v$(PKG_VERSION)
-PKG_HASH:=201d40730b1135b1b3cdea09f2c28ac634d73181ccd0172ceddee3649c5792fc
+PKG_HASH:=e4ec7131a91da44512574268f493c6d8ca105c87091691b8e9b56ca685d4f94d
 PKG_BUILD_DIR:=$(BUILD_DIR)/Linux-PAM-$(PKG_VERSION)
 
 PKG_MAINTAINER:=Nikos Mavrogiannopoulos <n.mavrogiannopoulos@gmail.com>
 PKG_LICENSE:=BSD-3c GPL
 PKG_LICENSE_FILES:=COPYING Copyright
-PKG_CPE_ID:=cpe:/a:kernel:linux-pam
+PKG_CPE_ID:=cpe:/a:linux-pam:linux-pam
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -76,6 +76,8 @@ define Package/libpam/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/security/*.so* $(1)/usr/lib/security/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/security/pam_filter/* $(1)/usr/lib/security/pam_filter/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/* $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/*.pc $(1)/usr/lib/pkgconfig/
 endef
 
 $(eval $(call BuildPackage,libpam))
