@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=prometheus
-PKG_VERSION:=2.22.0
-PKG_RELEASE:=2
+PKG_VERSION:=2.25.2
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/prometheus/prometheus/tar.gz/v${PKG_VERSION}?
-PKG_HASH:=9390cbd338d253956184d0f0a6719d21cb5719f0319fc48ee08d5bd48fc87cc2
+PKG_HASH:=85f50c0cfb4db206a59d2c3301e02d685c3fe4b451b41ca943a4eb94935cf4d4
 
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
@@ -47,6 +47,9 @@ Prometheus, a Cloud Native Computing Foundation project, is a systems and
 service monitoring system. It collects metrics from configured targets at given
 intervals, evaluates rule expressions, displays the results, and can trigger
 alerts if some condition is observed to be true.
+
+Default tsdb path is /srv/prometheus, you might want to edit /etc/config/prometheus
+in order to place it on USB storage or external SD card.
 endef
 
 define Package/prometheus/install

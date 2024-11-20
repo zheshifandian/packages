@@ -1,23 +1,23 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=syncthing
-PKG_VERSION:=1.23.2
-PKG_RELEASE:=1
+PKG_VERSION:=1.27.1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=syncthing-source-v$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/syncthing/syncthing/releases/download/v$(PKG_VERSION)
-PKG_HASH:=3d0eca0e6f4eaaeba4879918b3f54f47d59fb5f4288a83af821d509271ada189
+PKG_HASH:=5c7b0456e50c8a2e4c9767727c4139558ba95573a276273a1730a903e0a73834
 
 PKG_BUILD_DIR=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/$(PKG_NAME)
 
-PKG_MAINTAINER:=Paul Spooren <mail@aparcar.org>
+PKG_MAINTAINER:=Paul Spooren <mail@aparcar.org>, Van Waholtz <brvphoenix@gmail.com>
 PKG_LICENSE:=MPL-2.0
 PKG_LICENSE_FILES:=LICENSE
 PKG_CPE_ID:=cpe:/a:syncthing:syncthing
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/syncthing/syncthing
 GO_PKG_BUILD_PKG:=\
@@ -26,13 +26,13 @@ GO_PKG_BUILD_PKG:=\
 	$(if $(CONFIG_PACKAGE_strelaysrv),$(GO_PKG)/cmd/strelaysrv/)
 GO_PKG_INSTALL_EXTRA:=^gui/
 
+GO_PKG_TAGS:=noupgrade
 GO_PKG_LDFLAGS_X:=\
 	$(GO_PKG)/lib/build.Version=v$(PKG_VERSION) \
 	$(GO_PKG)/lib/build.Stamp=$(SOURCE_DATE_EPOCH) \
 	$(GO_PKG)/lib/build.User=openwrt \
 	$(GO_PKG)/lib/build.Host=openwrt \
-	$(GO_PKG)/lib/build.Tags=noupgrade
-GO_PKG_TAGS:=noupgrade
+	$(GO_PKG)/lib/build.Tags=$(GO_PKG_TAGS)
 
 include $(INCLUDE_DIR)/package.mk
 include ../../lang/golang/golang-package.mk

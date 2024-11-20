@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=net-snmp
-PKG_VERSION:=5.8
-PKG_RELEASE:=2
+PKG_VERSION:=5.9.4
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/net-snmp
-PKG_HASH:=b2fc3500840ebe532734c4786b0da4ef0a5f67e51ef4c86b3345d697e4976adf
+PKG_HASH:=8b4de01391e74e3c7014beb43961a2d6d6fa03acc34280b9585f4930745b0544
 PKG_MAINTAINER:=Stijn Tintel <stijn@linux-ipv6.be>
 PKG_LICENSE:=MIT BSD-3-Clause-Clear
 PKG_CPE_ID:=cpe:/a:net-snmp:net-snmp
@@ -41,7 +41,7 @@ define Package/libnetsnmp
 $(call Package/net-snmp/Default)
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=+libnl-tiny +libpci
+  DEPENDS:=+libnl-tiny +libpci +libpcre2
   TITLE:=Open source SNMP implementation (libraries)
 endef
 
@@ -130,7 +130,10 @@ SNMP_MIB_MODULES_INCLUDED = \
 	host/hr_system \
 	ieee802dot11 \
 	if-mib/ifXTable \
+	ip-mib/ipAddressTable \
 	ip-mib/inetNetToMediaTable \
+	ip-forward-mib/inetCidrRouteTable \
+	ip-forward-mib/ipCidrRouteTable \
 	mibII/at \
 	mibII/icmp \
 	mibII/ifTable \
@@ -148,7 +151,7 @@ SNMP_MIB_MODULES_INCLUDED = \
 	snmpv3/usmStats \
 	snmpv3/usmUser \
 	tunnel \
-	ucd-snmp/disk \
+	ucd-snmp/disk_hw \
 	ucd-snmp/dlmod \
 	ucd-snmp/extensible \
 	ucd-snmp/loadave \
@@ -208,6 +211,7 @@ CONFIGURE_ARGS += \
 	--without-mysql \
 	--without-rpm \
 	--without-zlib \
+	--with-pcre2-8 \
 	--with-nl \
 	 $(call autoconf_bool,CONFIG_IPV6,ipv6) \
 	--disable-perl-cc-checks \
@@ -216,14 +220,11 @@ CONFIGURE_ARGS += \
 
 CONFIGURE_VARS += \
 	ac_cv_header_netlink_netlink_h=yes \
-	ac_cv_header_pcre_h=no \
 	netsnmp_cv_func_nl_connect_LIBS=-lnl-tiny \
 
 ifeq ($(CONFIG_IPV6),y)
 SNMP_TRANSPORTS_INCLUDED+= UDPIPv6
 endif
-
-TARGET_LDFLAGS += -L$(TOOLCHAIN_DIR)/usr/lib
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \

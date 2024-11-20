@@ -8,23 +8,24 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libqmi
-PKG_SOURCE_VERSION:=1.30.8
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=1.34.0
+PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.freedesktop.org/mobile-broadband/libqmi.git
-PKG_MIRROR_HASH:=a0fa33a89011bdb593f66fd0b674f2a7c31f87e43ffd7f3e9a515b00864c4a91
+PKG_SOURCE_VERSION:=$(PKG_VERSION)
+PKG_MIRROR_HASH:=65ee91b81c6f68d908cc94a0b5d670eefa29d550ecf8ef94cb836981fbfa4c2a
+
+PKG_BUILD_FLAGS:=gc-sections
 
 PKG_MAINTAINER:=Nicholas Smith <nicholas@nbembedded.com>
-
-PKG_INSTALL:=1
+PKG_CPE_ID:=cpe:/a:libqmi_project:libqmi
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
-TARGET_CFLAGS += -ffunction-sections -fdata-sections -fno-merge-all-constants -fmerge-constants
-TARGET_LDFLAGS += -Wl,--gc-sections
+TARGET_CFLAGS += -fno-merge-all-constants -fmerge-constants
 
 define Package/libqmi/config
   source "$(SOURCE)/Config.in"

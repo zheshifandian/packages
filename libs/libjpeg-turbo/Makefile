@@ -1,19 +1,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libjpeg-turbo
-PKG_VERSION:=2.0.6
+PKG_VERSION:=3.0.3
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=@SF/$(PKG_NAME)
-PKG_HASH:=d74b92ac33b0e3657123ddcf6728788c90dc84dcb6a52013d758af3c4af481bb
+PKG_SOURCE_URL:=https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$(PKG_VERSION)
+PKG_HASH:=343e789069fc7afbcdfe44dbba7dbbf45afa98a15150e079a38e60e44578865d
 
 PKG_MAINTAINER:=Rosen Penev <rosenp@gmail.com>
 PKG_LICENSE:=BSD-3-Clause IJG zlib
 PKG_LICENSE_FILES:=LICENSE.md
+PKG_CPE_ID:=cpe:/a:libjpeg-turbo:libjpeg-turbo
 
-PKG_USE_MIPS16:=0 #Allows ASM compilation for speed.
-PKG_BUILD_PARALLEL:=1
+# Allows ASM compilation for speed
+PKG_BUILD_FLAGS:=no-mips16
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -50,30 +51,25 @@ define Package/libjpeg-turbo-utils/description
 endef
 
 CMAKE_OPTIONS += \
-	-DENABLE_SHARED=ON \
-	-DENABLE_STATIC=OFF \
-	-DREQUIRE_SIMD=OFF \
-	-DWITH_12BIT=OFF \
-	-DWITH_ARITH_DEC=OFF \
-	-DWITH_ARITH_ENC=OFF \
-	-DWITH_JAVA=OFF \
-	-DWITH_JPEG7=OFF \
-	-DWITH_JPEG8=OFF \
-	-DWITH_MEM_SRCDST=OFF \
 	-DWITH_SIMD=O$(if $(findstring mips,$(CONFIG_ARCH)),FF,N) \
 	-DWITH_TURBOJPEG=OFF
+
+ifneq ($(findstring arm,$(CONFIG_ARCH)),)
+ifeq ($(findstring neon,$(CONFIG_CPU_TYPE)),)
+	CMAKE_OPTIONS += -DWITH_SIMD=OFF
+endif
+endif
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
 	$(CP) $(PKG_INSTALL_DIR)/usr/include/*.h $(1)/usr/include/
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libjpeg.so* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libjpeg.a $(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/*.pc $(1)/usr/lib/pkgconfig/
 	$(SED) 's,/usr/include,$$$${prefix}/include,g' $(1)/usr/lib/pkgconfig/libjpeg.pc
 	$(SED) 's,/usr/lib,$$$${exec_prefix}/lib,g' $(1)/usr/lib/pkgconfig/libjpeg.pc
-	$(SED) 's,/usr/include,$$$${prefix}/include,g' $(1)/usr/lib/pkgconfig/libturbojpeg.pc
-	$(SED) 's,/usr/lib,$$$${exec_prefix}/lib,g' $(1)/usr/lib/pkgconfig/libturbojpeg.pc
 endef
 
 define Package/libjpeg-turbo/install

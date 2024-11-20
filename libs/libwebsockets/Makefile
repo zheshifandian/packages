@@ -8,18 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libwebsockets
-PKG_VERSION:=3.1.0
-PKG_RELEASE:=2
+PKG_VERSION:=4.3.3
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_URL:=https://codeload.github.com/warmcat/libwebsockets/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=db948be74c78fc13f1f1a55e76707d7baae3a1c8f62b625f639e8f2736298324
+PKG_HASH:=6fd33527b410a37ebc91bb64ca51bdabab12b076bc99d153d7c5dd405e4bdf90
 
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
-PKG_LICENSE:=LGPL-2.1+exception
+PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
+
+PKG_BUILD_DEPENDS:=libubox
 
 CMAKE_INSTALL:=1
 
@@ -27,14 +29,21 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
 
 CMAKE_OPTIONS += -DLWS_IPV6=$(if $(CONFIG_IPV6),ON,OFF)
+CMAKE_OPTIONS += -DISABLE_WERROR=ON
+CMAKE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
+CMAKE_OPTIONS += -DLWS_WITH_EXTERNAL_POLL=ON
+CMAKE_OPTIONS += -DLWS_WITH_ULOOP=ON
+
+# turn off all test apps
 CMAKE_OPTIONS += -DLWS_WITHOUT_TESTAPPS=ON
+CMAKE_OPTIONS += -DLWS_WITHOUT_TEST_SERVER=ON
+CMAKE_OPTIONS += -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=ON
+CMAKE_OPTIONS += -DLWS_WITHOUT_TEST_PING=ON
+CMAKE_OPTIONS += -DLWS_WITHOUT_TEST_CLIENT=ON
 
-# other options worth noting
-# CMAKE_OPTIONS += -DLWS_WITHOUT_EXTENSIONS=ON
-# CMAKE_OPTIONS += -DLWS_WITHOUT_DAEMONIZE=ON
-# CMAKE_OPTIONS += -DLWS_WITHOUT_SERVER=ON
-# CMAKE_OPTIONS += -DLWS_WITHOUT_DEBUG=ON
-
+ifeq ($(GCC_VERSION),15-20241027)
+	TARGET_CFLAGS += -Wno-error=unterminated-string-initialization
+endif
 
 define Package/libwebsockets/Default
 	SECTION:=libs
@@ -72,7 +81,6 @@ endef
 
 ifeq ($(BUILD_VARIANT),openssl)
     CMAKE_OPTIONS += -DLWS_OPENSSL_CLIENT_CERTS=/etc/ssl/certs
-    CMAKE_OPTIONS += -DLWS_OPENSSL_SUPPORT=ON
     CMAKE_OPTIONS += -DLWS_WITH_SSL=ON
 endif
 
@@ -82,7 +90,6 @@ endif
 
 ifeq ($(BUILD_VARIANT),full)
     CMAKE_OPTIONS += -DLWS_OPENSSL_CLIENT_CERTS=/etc/ssl/certs
-    CMAKE_OPTIONS += -DLWS_OPENSSL_SUPPORT=ON
     CMAKE_OPTIONS += -DLWS_WITH_SSL=ON
     CMAKE_OPTIONS += -DLWS_WITH_LIBUV=ON
     CMAKE_OPTIONS += -DLWS_WITH_PLUGINS=ON
@@ -99,7 +106,11 @@ endef
 
 Package/libwebsockets-mbedtls/install = $(Package/libwebsockets/install)
 Package/libwebsockets-openssl/install = $(Package/libwebsockets/install)
-Package/libwebsockets-full/install = $(Package/libwebsockets/install)
+
+define Package/libwebsockets-full/install
+	$(call Package/libwebsockets/install,$(1))
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libwebsockets-evlib_uv.so* $(1)/usr/lib
+endef
 
 $(eval $(call BuildPackage,libwebsockets-openssl))
 $(eval $(call BuildPackage,libwebsockets-mbedtls))

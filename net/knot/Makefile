@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot
-PKG_VERSION:=3.2.6
+PKG_VERSION:=3.4.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://secure.nic.cz/files/knot-dns/
-PKG_HASH:=ac124fb17dbc4ac5310a30a396245a6ba304b3c89abed0f8a47d727462c8da4d
+PKG_HASH:=2730b11398944faa5151c51b0655cf26631090343c303597814f2a57df424736
 
 PKG_MAINTAINER:=Daniel Salzman <daniel.salzman@nic.cz>
 PKG_LICENSE:=GPL-3.0 LGPL-2.0 0BSD BSD-3-Clause OLDAP-2.8
@@ -56,9 +56,9 @@ endef
 define Package/knot
 	$(call Package/knot/Default)
 	TITLE+= server with control utility
-	DEPENDS+=+libedit +liburcu +knot-libs +knot-libzscanner
-	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-$(PKG_RELEASE)), \
-	               knot-libzscanner (=$(PKG_VERSION)-$(PKG_RELEASE))
+	DEPENDS+=+libedit +liburcu +libdbus +knot-libs +knot-libzscanner
+	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-r$(PKG_RELEASE)), \
+	               knot-libzscanner (=$(PKG_VERSION)-r$(PKG_RELEASE))
 	USERID:=knot=5353:knot=5353
 endef
 
@@ -66,46 +66,46 @@ define Package/knot-dig
 	$(call Package/knot/Default)
 	TITLE+= advanced DNS lookup utility
 	DEPENDS+=+libedit +knot-libs
-	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-$(PKG_RELEASE))
+	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-r$(PKG_RELEASE))
 endef
 
 define Package/knot-host
 	$(call Package/knot/Default)
 	TITLE+= simple DNS lookup utility
 	DEPENDS+=+libedit +knot-libs
-	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-$(PKG_RELEASE))
+	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-r$(PKG_RELEASE))
 endef
 
 define Package/knot-nsupdate
 	$(call Package/knot/Default)
 	TITLE+= dynamic DNS update utility
 	DEPENDS+=+libedit +knot-libs +knot-libzscanner
-	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-$(PKG_RELEASE)), \
-	               knot-libzscanner (=$(PKG_VERSION)-$(PKG_RELEASE))
+	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-r$(PKG_RELEASE)), \
+	               knot-libzscanner (=$(PKG_VERSION)-r$(PKG_RELEASE))
 endef
 
 define Package/knot-zonecheck
 	$(call Package/knot/Default)
 	TITLE+= zonefile check utility
-	DEPENDS+=+libedit +liburcu +knot-libs +knot-libzscanner
-	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-$(PKG_RELEASE)), \
-	               knot-libzscanner (=$(PKG_VERSION)-$(PKG_RELEASE))
+	DEPENDS+=+libedit +liburcu +libdbus +knot-libs +knot-libzscanner
+	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-r$(PKG_RELEASE)), \
+	               knot-libzscanner (=$(PKG_VERSION)-r$(PKG_RELEASE))
 endef
 
 define Package/knot-keymgr
 	$(call Package/knot/Default)
 	TITLE+= DNSSEC key management utility
-	DEPENDS+=+libedit +liburcu +knot-libs +knot-libzscanner
-	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-$(PKG_RELEASE)), \
-	               knot-libzscanner (=$(PKG_VERSION)-$(PKG_RELEASE))
+	DEPENDS+=+libedit +liburcu +libdbus +knot-libs +knot-libzscanner
+	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-r$(PKG_RELEASE)), \
+	               knot-libzscanner (=$(PKG_VERSION)-r$(PKG_RELEASE))
 endef
 
 define Package/knot-tests
 	$(call Package/knot/Default)
 	TITLE+= tests
-	DEPENDS+=+libedit +liburcu +knot-libs +knot-libzscanner
-	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-$(PKG_RELEASE)), \
-	               knot-libzscanner (=$(PKG_VERSION)-$(PKG_RELEASE))
+	DEPENDS+=+libedit +liburcu +libdbus +knot-libs +knot-libzscanner
+	EXTRA_DEPENDS:=knot-libs (=$(PKG_VERSION)-r$(PKG_RELEASE)), \
+	               knot-libzscanner (=$(PKG_VERSION)-r$(PKG_RELEASE))
 endef
 
 define Package/knot-libs/description
@@ -152,6 +152,8 @@ CONFIGURE_ARGS += 			\
 	--enable-cap-ng=no            	\
 	--enable-xdp=no                 \
 	--enable-maxminddb=no		\
+	--enable-dbus=libdbus           \
+	--enable-quic			\
 	--disable-fastparser		\
 	--without-libidn		\
 	--with-libnghttp2=no		\

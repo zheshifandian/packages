@@ -1,19 +1,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libulfius
-PKG_VERSION:=2.6.9
+PKG_VERSION:=2.7.10
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/babelouest/ulfius/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=2255346a7715f14e8a9b8caeeb4f6ccd75e3617371a7028ac062742a972fcc0b
+PKG_HASH:=616c5df99584071461a1285dd7155883f7d2b94abf0931038feeebd3da3a6def
 
 PKG_MAINTAINER:=Toni Uhlig <matzeton@googlemail.com>
 PKG_LICENSE:=LGPL-2.1-or-later
 PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-$(BUILD_VARIANT)/ulfius-$(PKG_VERSION)
-PKG_BUILD_PARALLEL:=1
 CMAKE_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -39,17 +38,12 @@ define Package/libulfius-gnutls
 $(call Package/libulfius/default)
   TITLE+= with SSL support
   VARIANT:=gnutls
-  DEPENDS:=+libmicrohttpd +libcurl +libgnutls +liborcania
+  DEPENDS:=+libmicrohttpd +libcurl +liborcania +libgnutls +zlib
   PROVIDES:=libulfius
 endef
 
-define Package/libulfius-$(BUILD_VARIANT)/install
-	$(INSTALL_DIR) $(1)/usr/lib/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libulfius.so.* \
-		$(1)/usr/lib/
-endef
-
 CMAKE_OPTIONS += \
+	-D_GNU_SOURCE=ON \
 	-DDOWNLOAD_DEPENDENCIES=OFF \
 	-DBUILD_WEBSOCKET=OFF \
 	-DSEARCH_ORCANIA_U=ON \

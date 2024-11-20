@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=neon
-PKG_VERSION:=0.31.2
-PKG_RELEASE:=2
+PKG_VERSION:=0.32.4
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://notroj.github.io/neon
-PKG_HASH:=cf1ee3ac27a215814a9c80803fcee4f0ede8466ebead40267a9bd115e16a8678
+PKG_HASH:=b1e2120e4ae07df952c4a858731619733115c5f438965de4fab41d6bf7e7a508
 
 PKG_MAINTAINER:=Federico Di Marco <fededim@gmail.com>
 PKG_LICENSE:=LGPL-2.1-or-later
@@ -46,6 +46,9 @@ define Package/libneon/description
   - Abstract interface to parsing XML using libxml2 or expat, and wrappers for simplifying handling XML HTTP response bodies
   - WebDAV metadata support; wrappers for PROPFIND and PROPPATCH to simplify property manipulation.
 endef
+
+CONFIGURE_VARS += \
+	ne_cv_os_uname="Linux"
 
 CONFIGURE_ARGS += \
 	--enable-shared \
