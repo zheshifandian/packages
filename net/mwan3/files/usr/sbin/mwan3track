@@ -105,14 +105,22 @@ validate_wrap() {
 }
 
 disconnected() {
+	local status="$(cat ${MWAN3TRACK_STATUS_DIR}/${INTERFACE}/STATUS)"
+
 	STATUS='offline'
 	echo "offline" > $MWAN3TRACK_STATUS_DIR/$INTERFACE/STATUS
 	get_uptime > $MWAN3TRACK_STATUS_DIR/$INTERFACE/OFFLINE
 	echo "0" > $MWAN3TRACK_STATUS_DIR/$INTERFACE/ONLINE
 	score=0
 	[ "$1" = 1 ] && return
-	LOG notice "Interface $INTERFACE ($DEVICE) is offline"
-	env -i ACTION="disconnected" INTERFACE="$INTERFACE" DEVICE="$DEVICE" /sbin/hotplug-call iface
+
+	# Only execute disconnectd action if status was online or disconnecting
+	if [ "$status" = "online" ] || [ "$status" = "disconnecting" ]; then
+		LOG notice "Interface $INTERFACE ($DEVICE) is offline"
+		env -i ACTION="disconnected" INTERFACE="$INTERFACE" DEVICE="$DEVICE" /sbin/hotplug-call iface
+	else
+		LOG notice "Skip disconnected event for $INTERFACE ($DEVICE)"
+	fi
 }
 
 connected() {
@@ -120,6 +128,7 @@ connected() {
 	echo "online" > $MWAN3TRACK_STATUS_DIR/$INTERFACE/STATUS
 	echo "0" > $MWAN3TRACK_STATUS_DIR/$INTERFACE/OFFLINE
 	get_uptime > $MWAN3TRACK_STATUS_DIR/$INTERFACE/ONLINE
+	score=$((down+up))
 	host_up_count=0
 	lost=0
 	turn=0
@@ -269,7 +278,7 @@ main() {
 							TRACK_PID=$!
 							wait $TRACK_PID
 							ping_status=$?
-							loss="$(sed $TRACK_OUTPUT -ne 's/.*\([0-9]\+\)% packet loss.*/\1/p')"
+							loss="$(sed $TRACK_OUTPUT -ne 's/.* \([0-9]\+\)% packet loss.*/\1/p')"
 							if [ "$ping_status" -ne 0 ] || [ "$loss" -eq 100 ]; then
 								latency=999999
 								loss=100
@@ -298,7 +307,7 @@ main() {
 						WRAP nping -c $count $track_ip --${FAMILY#nping-} > $TRACK_OUTPUT &
 						TRACK_PID=$!
 						wait $TRACK_PID
-						result=$(grep $TRACK_OUTPUT Lost | awk '{print $12}')
+						result=$(grep Lost $TRACK_OUTPUT | awk '{print $12}')
 					;;
 				esac
 				do_log=""
@@ -343,34 +352,32 @@ main() {
 			if [ $score -lt $up ]; then
 				score=0
 				[ ${keep_failure_interval} -eq 1 ] && sleep_time=$failure_interval
-			else
+			elif [ $score -eq $up ]; then
+				disconnecting
+				sleep_time=$failure_interval
+				disconnected
+			elif [ $score -gt $up ]; then
 				disconnecting
 				sleep_time=$failure_interval
 			fi
-
-			if [ $score -eq $up ]; then
-				disconnected
-				score=0
-			fi
 		else
 			if [ $score -lt $((down+up)) ] && [ $lost -gt 0 ]; then
-				connecting
 				LOG info "Lost $((lost*count)) ping(s) on interface $INTERFACE ($DEVICE). Current score: $score"
 			fi
 
 			let score++
 			lost=0
 
-			if [ $score -gt $up ]; then
-				echo "online" > $MWAN3TRACK_STATUS_DIR/$INTERFACE/STATUS
-				score=$((down+up))
-			elif [ $score -le $up ]; then
+			if [ $score -lt $up ]; then
 				connecting
 				sleep_time=$recovery_interval
-			fi
-
-			if [ $score -eq $up ]; then
+			elif [ $score -eq $up ]; then
+				connecting
+				sleep_time=$recovery_interval
 				connected
+			elif [ $score -gt $up ]; then
+				echo "online" > $MWAN3TRACK_STATUS_DIR/$INTERFACE/STATUS
+				score=$((down+up))
 			fi
 		fi
 
@@ -391,8 +398,8 @@ main() {
 
 		if [ "${IFDOWN_EVENT}" -eq 1 ]; then
 			LOG debug "Register ifdown event on interface ${INTERFACE} (${DEVICE})"
-			disabled
 			disconnected
+			disabled
 			IFDOWN_EVENT=0
 		fi
 		if [ "${IFUP_EVENT}" -eq 1 ]; then

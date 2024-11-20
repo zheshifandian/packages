@@ -90,7 +90,7 @@ proto_bonding_add_slave() {
 
 proto_bonding_setup() {
 	local cfg="$1"
-	local link="bonding-$cfg"
+	local link="bond-$cfg"
 
 	# Check for loaded kernel bonding driver (/sys/class/net/bonding_masters exists)
 	[ -f "$BONDING_MASTERS" ] || {
@@ -111,7 +111,7 @@ proto_bonding_setup() {
 
 		802.3ad)
 			echo "$bonding_policy" > /sys/class/net/"$link"/bonding/mode
-			set_driver_values min_links ad_actor_sys_prio ad_actor_system ad_select lacp_rate
+			set_driver_values min_links ad_actor_sys_prio ad_actor_system ad_select lacp_rate xmit_hash_policy
 		;;
 
 		balance-rr)
@@ -193,22 +193,15 @@ proto_bonding_setup() {
 
 	proto_init_update "$link" 1
 
-	# For static configuration we _MUST_ have an IP address
-	[ -z "$ipaddr" ] && {
-		echo "$cfg" "No local IP address defined"
-		proto_notify_error "$cfg" INVALID_LOCAL_ADDRESS
-		proto_block_restart "$cfg"
-		return
-	}
-
-	proto_add_ipv4_address "$ipaddr" "$netmask"
+	# If ipaddr is configured, configure the ip to the interface
+	[ -n "$ipaddr" ] && proto_add_ipv4_address "$ipaddr" "$netmask"
 
 	proto_send_update "$cfg"
 }
 
 proto_bonding_teardown() {
 	local cfg="$1"
-	local link="bonding-$cfg"
+	local link="bond-$cfg"
 
 	# Check for loaded kernel bonding driver (/sys/class/net/bonding_masters exists)
 	[ -f "$BONDING_MASTERS" ] || {

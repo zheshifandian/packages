@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gst1-libav
-PKG_VERSION:=1.18.1
+PKG_VERSION:=1.20.5
 PKG_RELEASE:=1
 
 PKG_SOURCE:=gst-libav-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://gstreamer.freedesktop.org/src/gst-libav
-PKG_HASH:=39a717bc2613efbbba19df3cf5cacff0987471fc8281ba2c5dcdeaded79c2ed8
+PKG_HASH:=b152e3cc49d014899f53c39d8a6224a44e1399b4cf76aa5f9a903fdf9793c3cc
 PKG_BUILD_DIR:=$(BUILD_DIR)/gst-libav-$(PKG_VERSION)
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org> \
@@ -21,8 +21,6 @@ PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org> \
 PKG_LICENSE:=GPL-2.0-or-later LGPL-2.1-or-later
 PKG_LICENSE_FILES:=COPYING COPYING.LIB
 
-PKG_FIXUP:=autoreconf
-PKG_INSTALL:=1
 PKG_USE_MIPS16:=0
 
 GST_VERSION:=1.0
@@ -108,7 +106,7 @@ PKG_CONFIG_DEPENDS:= \
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 define Package/gst1-libav
   SECTION:=multimedia

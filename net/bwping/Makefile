@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020 Oleg Derevenetz <oleg.derevenetz@gmail.com>
+# Copyright (C) 2022 Oleg Derevenetz <oleg.derevenetz@gmail.com>
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bwping
-PKG_VERSION:=2.2
+PKG_VERSION:=2.5
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/bwping
-PKG_HASH:=7339541ec21fb9ae16d66ef0e45311696623133801aa86244d69bb276534ef4e
+PKG_HASH:=1d8762227f40909f6d42ef756ebc2c258e5fd4f268ff63ecc544b8d6f0802c82
 
 PKG_MAINTAINER:=Oleg Derevenetz <oleg.derevenetz@gmail.com>
 PKG_LICENSE:=BSD-2-Clause

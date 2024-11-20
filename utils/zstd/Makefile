@@ -1,22 +1,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zstd
-PKG_VERSION:=1.4.9
+PKG_VERSION:=1.5.6
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.zst
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/facebook/zstd/releases/download/v$(PKG_VERSION)
-PKG_HASH:=61dce0e9a5036d7fb9b5709ee6567c2c8a1b4ba48a8e43afe9ae355cc37bb494
+PKG_HASH:=8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1
 
-PKG_MAINTAINER:=
+PKG_MAINTAINER:=Aleksey Vasilenko <aleksey.vasilenko@gmail.com>
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=meson/host
-PKG_INSTALL:=1
-
 include $(INCLUDE_DIR)/package.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 MESON_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/build/meson/openwrt-build
 
@@ -64,16 +61,9 @@ ifeq ($(CONFIG_ZSTD_OPTIMIZE_O3),y)
 TARGET_CFLAGS:= $(filter-out -O%,$(TARGET_CFLAGS)) -O3
 endif
 
-TARGET_CFLAGS += $(if $(CONFIG_USE_UCLIBC),-D_BSD_SOURCE)
-
 MESON_ARGS += \
-	-Dlegacy_level=1 \
+	-Dlegacy_level=7 \
 	-Ddebug_level=0 \
-	-Dbacktrace=false \
-	-Dstatic_runtime=false \
-	-Dbin_programs=true \
-	-Dbin_tests=false \
-	-Dbin_control=false \
 	-Dzlib=disabled \
 	-Dlzma=disabled \
 	-Dlz4=disabled \

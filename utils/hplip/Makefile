@@ -6,19 +6,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=hplip
-PKG_VERSION:=3.21.2
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=3.23.12
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/hplip
-PKG_HASH:=410421a13e62205d41bacd3215993c89e513fb4d7fab07e23e2720465aea7c41
+PKG_HASH:=a76c2ac8deb31ddb5f0da31398d25ac57440928a0692dcb060a48daa718e69ed
 
 PKG_MAINTAINER:=Luiz Angelo Daros de Luca <luizluca@gmail.com>
 PKG_LICENSE:=GPL-2.0 GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING LICENSE
+PKG_CPE_ID:=cpe:/a:hp:linux_imaging_and_printing_project
 
 PKG_BUILD_PARALLEL:=1
-PKG_BUILD_DEPENDS:=cups
+PKG_BUILD_DEPENDS:=libcups
 PKG_FIXUP:=autoreconf
 
 include $(INCLUDE_DIR)/package.mk

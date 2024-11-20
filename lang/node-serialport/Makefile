@@ -9,21 +9,19 @@ include $(TOPDIR)/rules.mk
 
 PKG_NPM_NAME:=serialport
 PKG_NAME:=node-$(PKG_NPM_NAME)
-PKG_VERSION:=12.0.0
-PKG_RELEASE:=1
+PKG_VERSION:=9.0.4
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NPM_NAME)-$(PKG_VERSION).tgz
-PKG_SOURCE_URL:=https://mirrors.tencent.com/npm/$(PKG_NPM_NAME)/-/ \
-                https://registry.npmjs.org/$(PKG_NPM_NAME)/-/
-PKG_HASH:=021f2b0b985fae48bfb501631fbf8538723eacfea6478f3cae2d1cfe4653c45a
+PKG_SOURCE_URL:=https://registry.npmjs.org/$(PKG_NPM_NAME)/-/
+PKG_HASH:=e19fe993ad16ae0e03fc42e24cfe4babf8fd90f8358e1885d5e216277dda1086
+
+PKG_BUILD_DEPENDS:=node/host
+PKG_BUILD_FLAGS:=no-mips16
 
 PKG_MAINTAINER:=Hirokazu MORIKAWA <morikw2@gmail.com>
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
-
-PKG_BUILD_DEPENDS:=node/host
-PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -32,12 +30,12 @@ define Package/node-serialport
   SECTION:=lang
   CATEGORY:=Languages
   TITLE:=Node.js package to access serial ports
-  URL:=https://www.npmjs.org/package/serialport
-  DEPENDS:=+node +node-serialport-bindings-cpp
+  URL:=https://serialport.io/
+  DEPENDS:=+node +node-npm +node-serialport-bindings
 endef
 
 define Package/node-serialport/description
- Node.js package to access serial ports. Welcome your robotic javascript overlords. Better yet, program them!
+ Node.js package to access serial ports for reading and writing OR Welcome your robotic JavaScript overlords. Better yet, program them!
 endef
 
 TAR_OPTIONS+= --strip-components 1
@@ -45,37 +43,35 @@ TAR_CMD=$(HOST_TAR) -C $(1) $(TAR_OPTIONS)
 
 NODEJS_CPU:=$(subst powerpc,ppc,$(subst aarch64,arm64,$(subst x86_64,x64,$(subst i386,ia32,$(ARCH)))))
 TMPNPM:=$(shell mktemp -u XXXXXXXXXX)
-NPM_CACHE_DIR:=$(if $(call qstrip,$(CONFIG_NODEJS_NPM_CACHE_DIR)),$(call qstrip,$(CONFIG_NODEJS_NPM_CACHE_DIR)),$(TMP_DIR))
 
 TARGET_CFLAGS+=$(FPIC)
 TARGET_CPPFLAGS+=$(FPIC)
 
-define Build/Compile
-	cd $(PKG_BUILD_DIR); \
-	$(MAKE_VARS) \
+NPM_FLAGS=$(MAKE_VARS) \
 	$(MAKE_FLAGS) \
+	npm_config_arch=$(NODEJS_CPU) \
+	npm_config_target_arch=$(NODEJS_CPU) \
+	npm_config_build_from_source=true \
 	npm_config_nodedir=$(STAGING_DIR)/usr/ \
-	$(if $(CONFIG_NODEJS_NPM_KEEP_CACHE), npm_config_cache=$(NPM_CACHE_DIR)/npm-cache-$(PKG_NPM_NAME),npm_config_cache=$(TMP_DIR)/npm-cache-$(TMPNPM)) \
-	npm install --prefer-offline --no-audit --global-style --install-strategy=shallow --no-save --omit=dev --no-package-lock
+	npm_config_prefix=$(PKG_INSTALL_DIR)/usr/ \
+	npm_config_cache=$(TMP_DIR)/npm-cache-$(TMPNPM) \
+	npm_config_tmp=$(TMP_DIR)/npm-tmp-$(TMPNPM)
+
+define Build/Compile
+	$(NPM_FLAGS) npm i -g --production $(PKG_BUILD_DIR)
+	$(NPM_FLAGS) npm i --production --prefix=$(PKG_BUILD_DIR) --target_arch=$(NODEJS_CPU) --prefer-dedupe
+	rm -rf $(TMP_DIR)/npm-tmp-$(TMPNPM)
 	rm -rf $(TMP_DIR)/npm-cache-$(TMPNPM)
-	rm -f $(PKG_BUILD_DIR)/node_modules/.package-lock.json
-	find $(PKG_BUILD_DIR)/node_modules -type d -empty -print0 | xargs -0 rmdir || true
 endef
 
 define Package/node-serialport/install
 	$(INSTALL_DIR) $(1)/usr/lib/node/$(PKG_NPM_NAME)
-	$(CP) $(PKG_BUILD_DIR)/{package.json,LICENSE,*.md} \
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/node_modules/$(PKG_NPM_NAME)/{package.json,LICENSE,*.md} \
 		$(1)/usr/lib/node/$(PKG_NPM_NAME)/
-	$(CP) $(PKG_BUILD_DIR)/{node_modules,dist} \
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/node_modules/$(PKG_NPM_NAME)/*.js \
 		$(1)/usr/lib/node/$(PKG_NPM_NAME)/
-	$(INSTALL_DIR) $(1)/usr/lib/node_modules
-	$(LN) ../node/$(PKG_NPM_NAME) $(1)/usr/lib/node_modules/$(PKG_NPM_NAME)
-endef
-
-define Package/node-serialport/postrm
-#!/bin/sh
-rm /usr/lib/node_modules/serialport || true
-rm -rf /usr/lib/node/serialport || true
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/node_modules/$(PKG_NPM_NAME)/{node_modules,lib} \
+		$(1)/usr/lib/node/$(PKG_NPM_NAME)/
 endef
 
 $(eval $(call BuildPackage,node-serialport))

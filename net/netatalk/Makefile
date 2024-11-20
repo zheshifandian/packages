@@ -8,12 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=netatalk
-PKG_VERSION:=3.1.13
-PKG_RELEASE:=2
+PKG_VERSION:=3.2.5
+PKG_RELEASE:=1
+PKG_LICENSE:=GPL-2.0-or-later
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+#PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@SF/netatalk
-PKG_HASH:=89ada6bcfe1b39ad94f58c236654d1d944f2645c3e7de98b3374e0bd37d5e05d
+PKG_HASH:=57de9a7ed411029d6176e429a14ef314460251d8aebe7139aeadc35633d9584b
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
@@ -29,10 +31,10 @@ define Package/netatalk
   SECTION:=net
   CATEGORY:=Network
   SUBMENU:=Filesystem
-  DEPENDS:=+libattr +libdb47 +libgcrypt +libopenssl
+  DEPENDS:=+libattr +libdb47 +libgcrypt +libopenssl +libevent2
   TITLE:=netatalk
   URL:=http://netatalk.sourceforge.net
-  MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
+  MAINTAINER:=An Pa <apccv@outlook.com>
 endef
 
 define Package/netatalk/decription
@@ -45,8 +47,8 @@ TARGET_CFLAGS += -std=gnu99
 
 CONFIGURE_ARGS += \
 	--disable-afs \
-	--enable-hfs \
-	--disable-debugging \
+	--disable-hfs \
+	--enable-debugging \
 	--disable-shell-check \
 	--disable-timelord \
 	--disable-a2boot \

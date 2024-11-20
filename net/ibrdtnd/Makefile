@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ibrdtnd
 PKG_VERSION:=1.0.1
-PKG_RELEASE:=5
+PKG_RELEASE:=7
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://www.ibr.cs.tu-bs.de/projects/ibr-dtn/releases
@@ -21,7 +21,6 @@ PKG_LICENSE:=Apache-2.0
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 
-include $(INCLUDE_DIR)/uclibc++.mk
 include $(INCLUDE_DIR)/package.mk
 
 define Package/ibrdtnd
@@ -46,6 +45,8 @@ CONFIGURE_ARGS += \
 	--without-wifip2p \
 	--without-vmime \
 	--disable-libdaemon
+
+TARGET_CXXFLAGS += -std=c++11
 
 define Package/ibrdtnd/install
 	$(INSTALL_DIR) $(1)/usr/sbin/

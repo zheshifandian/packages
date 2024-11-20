@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libndpi
-PKG_VERSION:=3.4
+PKG_VERSION:=4.8
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/ntop/nDPI/tar.gz/$(PKG_VERSION)?
-PKG_HASH:=dc9b291c7fde94edb45fb0f222e0d93c93f8d6d37f4efba20ebd9c655bfcedf9
+PKG_HASH:=8f6235ba672d4ac8e4cbebb5611bc712a74587d9d53a649f483e4bcca5b80e58
 PKG_BUILD_DIR:=$(BUILD_DIR)/nDPI-$(PKG_VERSION)
 
 PKG_MAINTAINER:=Banglang Huang <banglang.huang@foxmail.com>, Toni Uhlig <matzeton@googlemail.com>
@@ -25,11 +25,22 @@ PKG_REMOVE_FILES:=autogen.sh
 PKG_BUILD_DEPENDS:=libpcap
 PKG_BUILD_PARALLEL:=1
 
-include $(INCLUDE_DIR)/uclibc++.mk
 include $(INCLUDE_DIR)/package.mk
 
-ifeq ($(CONFIG_LIBNDPI_GCRYPT),)
-CONFIGURE_ARGS += --disable-gcrypt
+ifeq ($(LIBNDPI_NDPIREADER),)
+CONFIGURE_ARGS += --with-only-libndpi
+endif
+
+ifneq ($(CONFIG_LIBNDPI_GCRYPT),)
+CONFIGURE_ARGS += --with-local-libgcrypt
+endif
+
+ifneq ($(CONFIG_LIBNDPI_PCRE),)
+CONFIGURE_ARGS += --with-pcre2
+endif
+
+ifneq ($(CONFIG_LIBNDPI_MAXMINDDB),)
+CONFIGURE_ARGS += --with-maxminddb
 endif
 
 define Package/libndpi
@@ -37,7 +48,7 @@ define Package/libndpi
   CATEGORY:=Libraries
   TITLE:=Library for deep-packet inspection
   URL:=https://github.com/ntop/nDPI
-  DEPENDS:=$(CXX_DEPENDS) +LIBNDPI_GCRYPT:libgcrypt +libpcap +libjson-c
+  DEPENDS:=+LIBNDPI_GCRYPT:libgcrypt +LIBNDPI_PCRE:libpcre2 +LIBNDPI_MAXMINDDB:libmaxminddb +LIBNDPI_NDPIREADER:libpcap
 endef
 
 define Package/libndpi/description
@@ -46,25 +57,41 @@ define Package/libndpi/description
 endef
 
 define Package/libndpi/config
-config LIBNDPI_GCRYPT
-	bool "GCrypt support"
+config LIBNDPI_NDPIREADER
+	bool "Enable ndpiReader"
 	depends on PACKAGE_libndpi
 	default n
 	help
-	  This option enables QUIC client hello decryption.
-	  Disabled by default.
-endef
+	  This option builds and installs ndpiReader,
+	  an example application that show some nDPI features.
 
-define Build/Prepare
-	$(PKG_UNPACK)
-	$(Build/Patch)
-	mv $(PKG_BUILD_DIR)/configure.seed $(PKG_BUILD_DIR)/configure.ac
-	$(SED) "s/@NDPI_MAJOR@/3/g" \
-		-e "s/@NDPI_MINOR@/4/g" \
-		-e "s/@NDPI_PATCH@/0/g" \
-		-e "s/@NDPI_VERSION_SHORT@/3.4.0/g" \
-		-e "s/@FUZZY@/dnl> /g" \
-		$(PKG_BUILD_DIR)/configure.ac
+config LIBNDPI_GCRYPT
+	bool "Use host GCrypt"
+	depends on PACKAGE_libndpi
+	default n
+	help
+	  This option enables the use of libgcrypt to decrypt QUIC client hello's.
+	  If disabled, nDPI will use a builtin lightweight libgcrypt version to
+	  decrypt QUIC client hello's.
+	  Disabled by default.
+
+config LIBNDPI_PCRE
+	bool "pcre support"
+	depends on PACKAGE_libndpi
+	default n
+	help
+	  This option enables the use of regular expressions.
+	  Used by nDPI to detect RCE injection.
+	  Disabled by default.
+
+config LIBNDPI_MAXMINDDB
+	bool "Maxmind GeoIP support"
+	depends on PACKAGE_libndpi
+	default n
+	help
+	  This options enables geographical information processing
+	  and serialization based on IP addresses.
+	  Disabled by default.
 endef
 
 define Build/InstallDev
@@ -86,8 +113,10 @@ define Package/libndpi/install
 	$(CP) $(PKG_BUILD_DIR)/src/lib/libndpi.so* \
 		$(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/usr/bin/
+ifneq ($(LIBNDPI_NDPIREADER),)
 	$(CP) $(PKG_BUILD_DIR)/example/ndpiReader \
 		$(1)/usr/bin/
+endif
 endef
 
 $(eval $(call BuildPackage,libndpi))

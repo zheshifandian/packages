@@ -5,19 +5,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=speedtest-go
-PKG_VERSION:=1.6.4
+PKG_VERSION:=1.7.7
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/showwin/speedtest-go/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=c43924d2860ed6ecd661b3393663fbe1092bf22a557c1fa37d8464a8f5d658cd
+PKG_HASH:=68609998d91e6ac159b41cf85c758058805527044e1af3d557fd67bb4fabd9de
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
+PKG_MAINTAINER:=TeleostNaCl Dai <teleostnacl@gmail.com>
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/showwin/speedtest-go
 

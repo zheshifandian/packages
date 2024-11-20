@@ -8,17 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sumo
-PKG_VERSION:=1.8.0
+PKG_VERSION:=1.16.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-src-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/sumo
-PKG_HASH:=fb0636152085153155ddb41841f0175c5f1e7989907b883f6c7453c63af49edb
+PKG_HASH:=33694b554a8c661ec407d04cc7c6534c473ccb2fbe7bf2ea97e1faddc70654fa
 
 PKG_MAINTAINER:=Álvaro Fernández Rojas <noltari@gmail.com>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
-PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk

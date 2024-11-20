@@ -10,17 +10,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=i2pd
-PKG_VERSION:=2.48.0
+PKG_VERSION:=2.53.1
 PKG_RELEASE:=1
 PKG_BUILD_PARALLEL:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/PurpleI2P/i2pd/tar.gz/$(PKG_VERSION)?
-PKG_HASH:=ccf417aa66ce37f72ea15b7fbcff4c71e823566ea74bda696b9c1e19aae08739
+PKG_HASH:=c6863d853905e7594ea661595ea591055f8f2f018b9b90507d5a43a6456188ea
 
 PKG_MAINTAINER:=David Yang <mmyangfl@gmail.com>
 PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE
+PKG_CPE_ID:=cpe:/a:i2pd:i2pd
 
 include $(INCLUDE_DIR)/package.mk
 

@@ -3,8 +3,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=attendedsysupgrade-common
-PKG_VERSION:=0.3
-PKG_RELEASE:=1
+PKG_VERSION:=8
 PKG_LICENSE:=GPL-2.0
 
 include $(INCLUDE_DIR)/package.mk
@@ -53,7 +52,7 @@ define Package/attendedsysupgrade-common/install
 	$(INSTALL_DATA) ./files/attendedsysupgrade.defaults $(1)/etc/uci-defaults/attendedsysupgrade
 
 	$(INSTALL_DIR) $(1)/etc/opkg/keys/
-	$(INSTALL_DATA) ./files/ca9d036b25c79698 $(1)/etc/opkg/keys/ca9d036b25c79698
+	$(INSTALL_DATA) ./files/8a11255d14aef6c8 $(1)/etc/opkg/keys/8a11255d14aef6c8
 endef
 
 $(eval $(call BuildPackage,attendedsysupgrade-common))

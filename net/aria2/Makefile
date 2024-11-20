@@ -15,6 +15,7 @@ PKG_SOURCE_URL:=https://github.com/aria2/aria2/releases/download/release-$(PKG_V
 PKG_HASH:=60a420ad7085eb616cb6e2bdf0a7206d68ff3d37fb5a956dc44242eb2f79b66b
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
+PKG_BUILD_FLAGS:=gc-sections lto
 
 PKG_MAINTAINER:=Imre Kaloz <kaloz@openwrt.org>, \
 	Hsing-Wang Liao <kuoruan@gmail.com>
@@ -82,9 +83,6 @@ CONFIGURE_ARGS += \
 	$(if $(CONFIG_ARIA2_COOKIE),--with,--without)-sqlite3 \
 	--without-libuv \
 	--with-libz
-
-TARGET_CXXFLAGS += -ffunction-sections -fdata-sections -flto
-TARGET_LDFLAGS += -Wl,--gc-sections -flto
 
 define Package/aria2/conffiles
 /etc/config/aria2

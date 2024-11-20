@@ -11,12 +11,12 @@ OpenWrt base build system decide flavor of fortify_source to use
 
 --- a/configure
 +++ b/configure
-@@ -1601,6 +1601,8 @@ for opt do
+@@ -760,6 +760,8 @@ for opt do
    ;;
    --gdb=*) gdb_bin="$optarg"
    ;;
 +  --disable-fortify-source) fortify_source="no"
 +  ;;
-   *)
-       echo "ERROR: unknown option $opt"
-       echo "Try '$0 --help' for more information"
+   # everything else has the same name in configure and meson
+   --*) meson_option_parse "$opt" "$optarg"
+   ;;

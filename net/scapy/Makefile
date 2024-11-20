@@ -8,15 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=scapy
-PKG_VERSION:=2.4.4
+PKG_VERSION:=2.5.0
 PKG_RELEASE:=1
 
 PYPI_NAME:=$(PKG_NAME)
-PKG_HASH:=ecfd7a14cd9c3ef0eb08d28d5bb71d97219edff1454ccbdff229f676b27900ee
+PKG_HASH:=5b260c2b754fd8d409ba83ee7aee294ecdbb2c235f9f78fe90bc11cb6e5debc2
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org>
 PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=LICENSE
+PKG_CPE_ID:=cpe:/a:scapy:scapy
 
 include ../../lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk

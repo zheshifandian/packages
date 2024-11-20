@@ -8,19 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libev
-PKG_VERSION:=4.31
-PKG_RELEASE:=1
+PKG_VERSION:=4.33
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://dist.schmorp.de/libev/Attic/
-PKG_HASH:=ed855d2b52118e32c0c1a6a32bd18c97f9e6711ca511f5ee12de3b9eccc66e5a
-PKG_LICENSE:=BSD-2-Clause
+PKG_HASH:=507eb7b8d1015fbec5b935f34ebed15bf346bed04a11ab82b8eee848c4205aea
+PKG_LICENSE:=BSD-2-Clause or GPL-2.0-or-later
+PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Karl Palsson <karlp@tweak.net.au>
 
 PKG_BUILD_PARALLEL:=1
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 include $(INCLUDE_DIR)/package.mk
 

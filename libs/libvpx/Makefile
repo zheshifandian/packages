@@ -9,18 +9,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libvpx
-PKG_VERSION:=1.9.0
+PKG_VERSION:=1.14.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://chromium.googlesource.com/webm/libvpx
-PKG_MIRROR_HASH:=0984f8c899b345f6be6f52f5e4888a6d654a45641b7b36de49e1aab22e1ecb58
+PKG_MIRROR_HASH:=a9737eadde24611fbbf080f28c792d804ea0970dadbc9421b427e18bb8f14820
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_MAINTAINER:=Luiz Angelo Daros de Luca <luizluca@gmail.com>
 PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE
-PKG_CPE_ID:=cpe:/a:john_koleszar:libvpx
+PKG_CPE_ID:=cpe:/a:webmproject:libvpx
 PKG_BUILD_PARALLEL:=1
 
 PKG_ABI_VERSION:=$(subst $(space),.,$(wordlist 1, 2, $(subst .,$(space),$(PKG_VERSION))))

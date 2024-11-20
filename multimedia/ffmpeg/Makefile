@@ -9,18 +9,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ffmpeg
-PKG_VERSION:=4.3.5
+PKG_VERSION:=5.1.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://ffmpeg.org/releases/
-PKG_HASH:=8e7a2f6d94b5130edd82d8b55ae75da5fc02f98698e8cc6772c413223b7b9092
+PKG_HASH:=619e706d662c8420859832ddc259cd4d4096a48a2ce1eefd052db9e440eef3dc
 PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>, \
 		Ian Leonard <antonlacon@gmail.com>
 
 PKG_LICENSE:=LGPL-2.1-or-later GPL-2.0-or-later LGPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING.GPLv2 COPYING.GPLv3 COPYING.LGPLv2.1 COPYING.LGPLv3
 PKG_CPE_ID:=cpe:/a:ffmpeg:ffmpeg
+
+PKG_BUILD_PARALLEL:=1
 
 FFMPEG_CUSTOM_ENCODERS:= \
 	ac3 \
@@ -246,7 +248,7 @@ $(call Package/ffmpeg/Default)
  SECTION:=multimedia
  CATEGORY:=Multimedia
  TITLE+= program
- DEPENDS+= +libffmpeg-full +openssl-util
+ DEPENDS+= +libffmpeg-full
  VARIANT:=full
 endef
 
@@ -344,7 +346,7 @@ endef
 define Package/libffmpeg-full
 $(call Package/libffmpeg/Default)
  TITLE+= (full)
- DEPENDS+= +alsa-lib +libopenssl +libopus \
+ DEPENDS+= +alsa-lib +libgnutls +PACKAGE_libopus:libopus \
     +SOFT_FLOAT:shine \
     +!SOFT_FLOAT:lame-lib \
     +PACKAGE_libx264:libx264 \
@@ -395,7 +397,6 @@ FFMPEG_CONFIGURE:= \
 	--enable-static \
 	--enable-pthreads \
 	--enable-zlib \
-	--enable-protocol=rtmp,rtmps \
 	--disable-doc \
 	--disable-debug \
 	\
@@ -467,8 +468,7 @@ ifeq ($(BUILD_VARIANT),full)
 	)
 
 	FFMPEG_CONFIGURE+= \
-		--enable-nonfree \
-		--enable-openssl \
+		--enable-gnutls \
 		$(if $(CONFIG_BUILD_PATENTED),, \
 			$(call FFMPEG_DISABLE,decoder,$(FFMPEG_PATENTED_DECODERS)) \
 			$(call FFMPEG_DISABLE,muxer,$(FFMPEG_PATENTED_MUXERS)) \
@@ -635,7 +635,7 @@ define Build/Configure
 endef
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) \
+	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
 		all install
 endef

@@ -8,16 +8,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sstp-client
-PKG_VERSION:=1.0.13
-PKG_RELEASE:=1
+PKG_VERSION:=1.0.19
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=@SF/sstp-client/$(PKG_VERSION)
-PKG_HASH:=961258fca0795d8ad60b047942cf7cb53d025d353fd1e4ba08c2b75799f5321b
+PKG_SOURCE_URL:=https://gitlab.com/sstp-project/sstp-client/-/archive/1.0.19/
+PKG_HASH:=e2652365f69f5037102e78f4e115ff764a390b27bb3fd513a8a50b10a61bb613
 
 PKG_MAINTAINER:=Federico Di Marco <fededim@gmail.com>
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
+
+PKG_FIXUP:=autoreconf
 
 include $(INCLUDE_DIR)/package.mk
 

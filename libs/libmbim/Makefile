@@ -8,23 +8,24 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libmbim
-PKG_SOURCE_VERSION:=1.26.4
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=1.30.0
+PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.freedesktop.org/mobile-broadband/libmbim.git
-PKG_MIRROR_HASH:=4963f9135f8ad26165d969d0b2028b00d68243201113c94a2ebe22c4227058a4
+PKG_SOURCE_VERSION:=$(PKG_VERSION)
+PKG_MIRROR_HASH:=0ff9212138eb68c2e33ad9220aa64df2e9a0da86f03dd02bf6d4cf02bcd95a68
+
+PKG_BUILD_FLAGS:=gc-sections
 
 PKG_MAINTAINER:=Nicholas Smith <nicholas@nbembedded.com>
-
-PKG_INSTALL:=1
+PKG_CPE_ID:=cpe:/a:freedesktop:libmbim
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
-TARGET_CFLAGS += -ffunction-sections -fdata-sections -fno-merge-all-constants -fmerge-constants
-TARGET_LDFLAGS += -Wl,--gc-sections
+TARGET_CFLAGS += -fno-merge-all-constants -fmerge-constants
 
 MESON_ARGS += \
 	-Dintrospection=false \

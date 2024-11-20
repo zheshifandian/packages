@@ -8,18 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gptfdisk
-PKG_VERSION:=1.0.6
+PKG_VERSION:=1.0.10
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/$(PKG_NAME)
-PKG_HASH:=ddc551d643a53f0bd4440345d3ae32c49b04a797e9c01036ea460b6bb4168ca8
+PKG_HASH:=2abed61bc6d2b9ec498973c0440b8b804b7a72d7144069b5a9209b2ad693a282
 
-PKG_MAINTAINER:=Alif M. Ahmad <alive4ever@live.com>
+PKG_MAINTAINER:=
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
 
 PKG_BUILD_PARALLEL:=1
+PKG_BUILD_FLAGS:=gc-sections lto
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -72,8 +73,9 @@ define Package/fixparts/description
   Master Boot Record (MBR) partition tables
 endef
 
-TARGET_CXXFLAGS += -std=c++11 -ffunction-sections -fdata-sections -fno-rtti -flto
-TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
+TARGET_CXXFLAGS += -std=c++11 -fno-rtti
+TARGET_LDFLAGS += -Wl,--as-needed
+MAKE_FLAGS += TARGET=linux
 
 define Package/gdisk/install
 	$(INSTALL_DIR) $(1)/usr/bin

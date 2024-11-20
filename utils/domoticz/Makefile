@@ -8,22 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=domoticz
-PKG_VERSION:=2021.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=2023.2
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://github.com/domoticz/domoticz/archive/$(PKG_VERSION)/$(PKG_SOURCE)
-PKG_HASH:=c4dc3455edae8bf00d2e950002f70d5b90ac577b1559ef7ada6870d970069fbb
+PKG_SOURCE_URL:=https://codeload.github.com/domoticz/domoticz/tar.gz/$(PKG_VERSION)?
+PKG_HASH:=32bcf49df8c80c470352e63004a82d9601b90ccf406096099656250a4515ac28
 
 PKG_MAINTAINER:=David Woodhouse <dwmw2@infradead.org>
 PKG_LICENSE:=GPL-3.0
 PKG_LICENSE_FILES:=License.txt
+PKG_CPE_ID:=cpe:/a:domoticz:domoticz
 
 PKG_BUILD_DEPENDS:=python3 minizip cereal
-PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
-
-CMAKE_INSTALL:=1
+PKG_BUILD_FLAGS:=no-mips16 lto
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -76,9 +74,7 @@ CMAKE_OPTIONS += \
 	-DUSE_PYTHON=yes \
 	-DWITH_LIBUSB=no
 
-TARGET_CFLAGS += -flto
-TARGET_CXXFLAGS += -DWITH_GPIO -flto
-TARGET_LDFLAGS += -lpython3.9
+TARGET_CXXFLAGS += -DWITH_GPIO
 
 define Build/Prepare
 	$(call Build/Prepare/Default)

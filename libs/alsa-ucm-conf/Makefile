@@ -6,13 +6,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alsa-ucm-conf
-PKG_VERSION:=1.2.4
+PKG_VERSION:=1.2.11
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=ftp://ftp.alsa-project.org/pub/lib/ \
-		http://distfiles.gentoo.org/distfiles/
-PKG_HASH:=2c3b535c77dcb9aaf62a61f4f8324f1ab184162f105f7ec9ed1e37c742fcd340
+PKG_SOURCE_URL:=https://www.alsa-project.org/files/pub/lib/ \
+		https://distfiles.gentoo.org/distfiles/
+PKG_HASH:=387c01cf30e2a1676d7b8f72b2681cf219abca70dd1ec2a9e33add5bf3feae81
 
 PKG_MAINTAINER:=
 PKG_LICENSE:=BSD-3-Clause

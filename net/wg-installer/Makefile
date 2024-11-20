@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=wg-installer
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=28
 
 PKG_MAINTAINER:=Nick Hainke <vincent@systemli.org>
 
@@ -42,6 +42,10 @@ define Package/wg-installer-server/install
 
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./wg-server/config/wgserver.init $(1)/etc/init.d/wgserver
+endef
+
+define Package/wg-installer-server/conffiles
+/etc/config/wgserver
 endef
 
 define Package/wg-installer-server/postinst
@@ -87,6 +91,10 @@ define Package/wg-installer-client/install
 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) ./wg-client/config/wgclient.conf $(1)/etc/config/wgclient
+endef
+
+define Package/wg-installer-client/conffiles
+/etc/config/wgclient
 endef
 
 $(eval $(call BuildPackage,wg-installer-server))

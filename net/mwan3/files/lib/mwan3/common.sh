@@ -5,6 +5,7 @@ IP6="ip -6"
 SCRIPTNAME="$(basename "$0")"
 
 MWAN3_STATUS_DIR="/var/run/mwan3"
+MWAN3_STATUS_IPTABLES_LOG_DIR="${MWAN3_STATUS_DIR}/iptables_log"
 MWAN3TRACK_STATUS_DIR="/var/run/mwan3track"
 
 MWAN3_INTERFACE_MAX=""
@@ -20,6 +21,12 @@ MAX_SLEEP=$(((1<<31)-1))
 
 command -v ip6tables > /dev/null
 NO_IPV6=$?
+
+IPS="ipset"
+IPT4="iptables -t mangle -w"
+IPT6="ip6tables -t mangle -w"
+IPT4R="iptables-restore -T mangle -w -n"
+IPT6R="ip6tables-restore -T mangle -w -n"
 
 LOG()
 {
@@ -54,18 +61,20 @@ mwan3_get_src_ip()
 	unset "$1"
 	config_get family "$interface" family ipv4
 	if [ "$family" = "ipv4" ]; then
-		addr_cmd='network_get_ipaddr'
+		addr_cmd_1='network_get_ipaddr'
+		addr_cmd_2='false'
 		default_ip="0.0.0.0"
 		sed_str='s/ *inet \([^ \/]*\).*/\1/;T; pq'
 		IP="$IP4"
 	elif [ "$family" = "ipv6" ]; then
-		addr_cmd='network_get_ipaddr6'
+		addr_cmd_1='network_get_preferred_ipaddr6'
+		addr_cmd_2='network_get_ipaddr6'
 		default_ip="::"
 		sed_str='s/ *inet6 \([^ \/]*\).* scope.*/\1/;T; pq'
 		IP="$IP6"
 	fi
 
-	$addr_cmd _src_ip "$true_iface"
+	$addr_cmd_1 _src_ip "$true_iface" 2>&1 || $addr_cmd_2 _src_ip "$true_iface"
 	if [ -z "$_src_ip" ]; then
 		network_get_device device $true_iface
 		_src_ip=$($IP address ls dev $device 2>/dev/null | sed -ne "$sed_str")
@@ -100,7 +109,7 @@ mwan3_get_mwan3track_status()
 			tracking="down"
 		fi
 	else
-		tracking="not enabled"
+		tracking="disabled"
 	fi
 	echo "$tracking"
 }
@@ -112,6 +121,7 @@ mwan3_init()
 	config_load mwan3
 
 	[ -d $MWAN3_STATUS_DIR ] || mkdir -p $MWAN3_STATUS_DIR/iface_state
+	[ -d "$MWAN3_STATUS_IPTABLES_LOG_DIR" ] || mkdir -p "$MWAN3_STATUS_IPTABLES_LOG_DIR"
 
 	# mwan3's MARKing mask (at least 3 bits should be set)
 	if [ -e "${MWAN3_STATUS_DIR}/mmx_mask" ]; then
@@ -132,7 +142,7 @@ mwan3_init()
 	# remove "linkdown", expiry and source based routing modifiers from route lines
 	config_get_bool source_routing globals source_routing 0
 	[ $source_routing -eq 1 ] && unset source_routing
-	MWAN3_ROUTE_LINE_EXP="s/linkdown //; s/expires [0-9]\+sec//; s/error [0-9]\+//; ${source_routing:+s/default\(.*\) from [^ ]*/default\1/;} p"
+	MWAN3_ROUTE_LINE_EXP="s/offload//; s/linkdown //; s/expires [0-9]\+sec//; s/error [0-9]\+//; ${source_routing:+s/default\(.*\) from [^ ]*/default\1/;} p"
 
 	# mark mask constants
 	bitcnt=$(mwan3_count_one_bits MMX_MASK)

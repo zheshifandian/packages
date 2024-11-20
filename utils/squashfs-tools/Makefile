@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (C) 2016 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -8,17 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=squashfs-tools
-PKG_VERSION:=4.5
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=4.6.1
+PKG_RELEASE:=1
 
 PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=COPYING
 PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
-PKG_CPE_ID:=cpe:/a:phillip_lougher:squashfs
+PKG_CPE_ID:=cpe:/a:squashfs-tools_project:squashfs-tools
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/plougher/squashfs-tools/tar.gz/${PKG_VERSION}?
-PKG_HASH:=b9e16188e6dc1857fe312633920f7d71cc36b0162eb50f3ecb1f0040f02edddd
+PKG_HASH:=94201754b36121a9f022a190c75f718441df15402df32c2b520ca331a107511c
 
 PKG_BUILD_PARALLEL:=1
 include $(INCLUDE_DIR)/package.mk
@@ -51,9 +51,6 @@ define Package/squashfs-tools-unsquashfs/config
 endef
 
 Build/Configure:=
-
-MAKE_FLAGS += \
-	XATTR_SUPPORT=
 
 ifneq ($(CONFIG_SQUASHFS_TOOLS_XZ_SUPPORT),)
 MAKE_FLAGS += XZ_SUPPORT=1

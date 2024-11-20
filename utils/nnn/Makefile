@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=nnn
-PKG_VERSION:=4.2
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=4.9
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-v$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/jarun/nnn/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=5675f9fe53bddfd92681ef88bf6c0fab3ad897f9e74dd6cdff32fe1fa62c687f
+PKG_HASH:=9e25465a856d3ba626d6163046669c0d4010d520f2fb848b0d611e1ec6af1b22
 
 PKG_MAINTAINER:=Josef Schlehofer <pepe.schlehofer@gmail.com>
 PKG_LICENSE:=BSD-2-Clause

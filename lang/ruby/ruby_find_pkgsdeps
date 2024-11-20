@@ -6,6 +6,8 @@
 # Must run inside a openwrt with all *ruby* packages installed
 #
 
+require "rbconfig"
+
 RUBY_SIMPLE_VERSION = RUBY_VERSION.split(".")[0..1].join(".")
 failed = false
 
@@ -23,16 +25,54 @@ packages.each do
 	files=`opkg files "#{pkg}" | sed -e 1d`.split("\n")
 	package_files[pkg]=files if files
 end
+# Fake enc/utf_16 to dummy enc:
+package_files["ruby-enc"]+=[RbConfig::CONFIG["rubylibdir"] + "/enc/utf_16.rb" ]
 
-require_regex=/^require ["']([^"']+)["'].*/
-require_regex_ignore=/^require ([a-zA-Z\$]|["']$|.*\/$)/
-require_ignore=%w{foo rubygems/defaults/operating_system win32console java Win32API
-                  builder/xchar json/pure simplecov win32/sspi rdoc/markdown/literals_1_8 enumerator win32/resolv rbtree
-                  xmlscan/parser xmlscan/scanner xmltreebuilder xml/parser xmlparser xml/encoding-ja xmlencoding-ja
-                  iconv uconv win32ole gettext/po_parser gettext/mo libxml psych.jar psych_jars jar-dependencies thread minitest/proveit
-		bundler pry bcrypt net/http/pipeline capistrano/version rubygems/builder rubygems/format diff/lcs graphviz
-		win32api racc/cparse-jruby.jar profile profiler sorted_set jruby coverage/helpers stackprof webrick/https webrick
-	}
+require_regex=/^ *require ["']([^"']+)["'].*/
+require_regex_ignore=/^ *require ([a-zA-Z\$]|["']\$|.*\/$|.*#.*|.*\.$)/
+require_ignore=%w{
+	bundler
+	capistrano/version
+	coverage/helpers
+	dbm
+	ffi
+	fiber
+	foo
+	gettext/mo
+	gettext/po_parser
+	graphviz
+	iconv
+	java
+	jruby
+	json/pure
+	minitest/proveit
+	open3/jruby_windows
+	prism/prism
+	profile
+	racc/cparse-jruby.jar
+	repl_type_completor
+	rubygems/defaults/operating_system
+	rubygems/net/http
+	rubygems/timeout
+	sorted_set
+	stackprof
+	thread
+	tracer
+	uconv
+	webrick
+	webrick/https
+	win32api
+	win32ole
+	win32/resolv
+	win32/sspi
+	xml/encoding-ja
+	xmlencoding-ja
+	xml/parser
+	xmlparser
+	xmlscan/scanner
+}
+
+matched_ignored={}
 
 builtin_enc=[
 	Encoding.find("ASCII-8BIT"),
@@ -86,18 +126,19 @@ packages.each do
 				when /^require /
 					#puts "#{file}:#{line}"
 					if require_regex_ignore =~ line
-						#puts "Ignoring #{line} at #{file}:#{lineno} (REGEX)..."
+						puts "Ignoring #{line} at #{file}:#{lineno} (REGEX)..."
 						next
 					end
 					if not require_regex =~ line
-						puts "Unknown require: '#{line}' at file #{file}:#{lineno}"
+						puts "Unknown require: '#{line}' at file #{file}:#{lineno} and it did not match #{require_regex_ignore}"
 						failed=true
 					end
 					require=line.gsub(require_regex,"\\1")
 					require.gsub!(/\.(so|rb)$/,"")
 
 					if require_ignore.include?(require)
-						#puts "Ignoring #{line} at #{file}:#{lineno} (STR)..."
+						puts "Ignoring #{line} at #{file}:#{lineno} (STR)..."
+                                                matched_ignored[require]=1
 						next
 					end
 
@@ -118,6 +159,11 @@ packages.each do
 	end
 end
 exit(1) if failed
+
+missed_ignored = (require_ignore - matched_ignored.keys).sort.join(",")
+if not missed_ignored.empty?
+    puts "These 'require_ignore' didn't match anything: ",(require_ignore - matched_ignored.keys).sort.join(","),""
+end
 
 # From ruby source: grep -E 'rb_require' -R . | grep -E '\.c:.*rb_require.*'
 # Add dependencies of ruby files from ruby lib.so
@@ -140,22 +186,16 @@ package_files.each do |(pkg,files)|
 	end
 end
 
+# For optional require or for breaking cycle dependencies
 weak_dependency=Hash.new { |h,k| h[k]=[] }
 weak_dependency.merge!({
-"ruby-misc"=>["ruby-openssl","ruby-fiddle"],			#securerandom.rb
-"ruby-debuglib"=>["ruby-readline"],				#debug.rb
-"ruby-drb"=>["ruby-openssl"],				 	#drb/ssl.rb
-"ruby-irb"=>["ruby-rdoc", "ruby-readline"],		 	#irb/cmd/help.rb
-"ruby-gems"=>["ruby-openssl","ruby-io-console",  		#rubygems/commands/cert_command.rb rubygems/user_interaction.rb
-		"ruby-bundler", "ruby-erb", "ruby-rdoc"],	#rubygems.rb rubygems/server.rb
-"ruby-net"=>["ruby-openssl","ruby-io-console","ruby-zlib"], 	#net/*.rb
-"ruby-optparse"=>["ruby-uri","ruby-datetime"],			#optparse/date.rb optparse/uri.rb
-"ruby-racc"=>["ruby-gems"],					#/usr/bin/racc*
-"ruby-rake"=>["ruby-net","ruby-gems"],				#rake/contrib/ftptools.rb /usr/bin/rake
-"ruby-rdoc"=>["ruby-gems","ruby-readline",			#/usr/bin/rdoc and others
-	       "ruby-io-console"],				#rdoc/stats/normal.rb
-"ruby-testunit"=>["ruby-io-console"],			 	#gems/test-unit-3.1.5/lib/test/unit/ui/console/testrunner.rb
-"ruby-net-http"=>["ruby-open-uri"]				#net/http/status.rb
+	"ruby-irb"      =>%w{ruby-rdoc ruby-readline ruby-debug}, # irb/cmd/help.rb irb/cmd/debug.rb,3.2/irb/cmd/debug.rb 
+	"ruby-gems"     =>%w{ruby-bundler ruby-rdoc},             # rubygems.rb rubygems/server.rb rdoc/rubygems_hook
+	"ruby-racc"     =>%w{ruby-gems},			  # /usr/bin/racc*
+	"ruby-rake"     =>%w{ruby-gems ruby-debug},               # /usr/bin/rake gems/3.3/gems/rake-13.1.0/lib/rake/application.rb
+	"ruby-rdoc"     =>%w{ruby-readline},			  # rdoc/ri/driver.rb
+	"ruby-testunit" =>%w{ruby-io-console},			  # gems/test-unit-3.1.5/lib/test/unit/ui/console/testrunner.rb
+	"ruby-net-http" =>%w{ruby-open-uri}			  # net/http/status.rb
 })
 
 puts "Looking for package dependencies..."
@@ -179,7 +219,7 @@ package_requires_files.each do
 			package_provides[require] = found
 		end
 		if weak_dependency[pkg].include?(found)
-			puts "#{pkg}: #{found} provides #{require} (weak depedendency ignored)"
+                        puts "#{pkg}: #{found} provides #{require} (weak depedendency ignored) for #{files.collect {|file| file.sub("/usr/lib/ruby/","") }.join(",")}"
 		else
 			puts "#{pkg}: #{found} provides #{require} for #{files.collect {|file| file.sub("/usr/lib/ruby/","") }.join(",")}"
 			package_dependencies[pkg] += [found]
@@ -204,8 +244,8 @@ begin
 		deps.each {|dep| puts "#{pkg}: #{dep} also depends on #{pkg}" if package_dependencies[dep].include?(pkg) }
 		deps_new = deps.collect {|dep| [dep] + package_dependencies[dep] }.inject([],:+).uniq.sort
 		if not deps == deps_new
-			puts "#{pkg}: #{deps.join(",")}"
-			puts "#{pkg}: #{deps_new.join(",")}"
+			puts "#{pkg}: {deps.join(",")} (OLD)"
+			puts "#{pkg}: #{deps_new.join(",")} (NEW)"
 			package_dependencies[pkg]=deps_new
 
 			if deps_new.include?(pkg)

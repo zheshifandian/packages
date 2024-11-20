@@ -8,19 +8,25 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openldap
-PKG_VERSION:=2.4.58
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=2.6.8
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tgz
-PKG_SOURCE_URL:=https://gpl.savoirfairelinux.net/pub/mirrors/openldap/openldap-release/ \
-	https://mirror.eu.oneandone.net/software/openldap/openldap-release/ \
+PKG_SOURCE_URL:=https://mirror.eu.oneandone.net/software/openldap/openldap-release/ \
 	https://www.openldap.org/software/download/OpenLDAP/openldap-release/
-PKG_HASH:=57b59254be15d0bf6a9ab3d514c1c05777b02123291533134a87c94468f8f47b
+PKG_HASH:=48969323e94e3be3b03c6a132942dcba7ef8d545f2ad35401709019f696c3c4e
 PKG_LICENSE:=OLDAP-2.8
 PKG_LICENSE_FILES:=LICENSE
 PKG_CPE_ID:=cpe:/a:openldap:openldap
 
 PKG_FIXUP:=autoreconf
+
+# Fixes the following:
+# libtool: Version mismatch error.  This is libtool 2.4.2, but the
+# libtool: definition of this LT_INIT comes from libtool 2.4.6.
+# libtool: You should recreate aclocal.m4 with macros from libtool 2.4.2
+# libtool: and run autoconf again.
+PKG_REMOVE_FILES:=build/ltversion.m4
 
 PKG_CONFIG_DEPENDS := \
         CONFIG_OPENLDAP_DEBUG \
@@ -43,53 +49,12 @@ endef
 define Package/libopenldap
   $(call Package/libopenldap/Default)
   MENU:=1
-  DEPENDS:=+libopenssl +libsasl2 +libpthread +OPENLDAP_DB47:libdb47 +OPENLDAP_ICU:icu
+  DEPENDS:=+libopenssl +libsasl2 +libpthread +libuuid +OPENLDAP_DB47:libdb47 +OPENLDAP_ICU:icu
   TITLE+= (libraries)
 endef
 
-define Package/libopenldap/config
-  config OPENLDAP_DEBUG
-	bool "Enable debugging information"
-	default y
-	help
-		Enable debugging information. This option must be enabled
-		for the loglevel directive to work.
-  config OPENLDAP_CRYPT
-	bool "Crypt(3) passwords support"
-	default n
-	help
-		With crypt(3) password storage scheme enabled, OpenLDAP can
-		receive and store SHA-256 and SHA-512 password hashes from
-		Samba AD-DC. If this option is disabled, synchronization of
-		passwords between Samba AD-DC (v4.5 and above) and OpenLDAP
-		requires use of cleartext passwords.
-		To enable crypt(3) password synchronization functionality:
-		1. Re-include crypt(3) support in OpenWRT by enabling 'Include
-		crypt() support for SHA256, SHA512 and Blowfish ciphers' option
-		in "Advanced configuration options (for developers)" ->
-		"Toolchain Options".
-		2. Provision AD-DC with 'password hash userPassword schemes'
-		option. For more information, see smb.conf manpage for details
-		on 'password hash userPassword schemes'.
-		3. Use a script to synchronize passwords from AD-DC to
-		OpenLDAP. See samba-tool manpage for 'user syncpasswords'.
-  config OPENLDAP_MONITOR
-	bool "Enable monitor backend"
-	default n
-	help
-		Enable monitor backend to obtain information about the running
-		status of the daemon. See OpenLDAP documentation for more
-		information.
-  config OPENLDAP_DB47
-	bool "Berkeley DB support"
-	default n
-	help
-		Enable Berkeley DB support (BDB).
-  config OPENLDAP_ICU
-	bool "ICU support"
-	default n
-	help
-		Enable ICU (International Components for Unicode) support.
+define Package/openldap/config
+  source "$(SOURCE)/Config.in"
 endef
 
 define Package/libopenldap/description
@@ -129,14 +94,12 @@ TARGET_CFLAGS += $(FPIC) -lpthread \
 	-DURANDOM_DEVICE=\\\"/dev/urandom\\\"
 
 CONFIGURE_ARGS += \
-	--enable-shared \
-	--enable-static \
 	--enable-dynamic \
 	--enable-syslog \
 	--with-cyrus-sasl \
 	--with-threads \
 	--with-tls \
-	--with-yielding_select="yes" \
+	--with-yielding-select="yes" \
 	--enable-null \
 	--disable-relay
 

@@ -19,8 +19,9 @@ PKG_MAINTAINER:=Jonathan Bennett <JBennett@incomsystems.biz>
 PKG_LICENSE:=LGPL-2.1-or-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_PARALLEL:=1
-PKG_CONFIG_DEPENDS:=CONFIG_PACKAGE_qrencode
+PKG_CONFIG_DEPENDS:=CONFIG_QRENCODE_PNG
+
+PKG_BUILD_FLAGS:=lto
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -29,7 +30,9 @@ define Package/libqrencode
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=Library for encoding data in a QR Code symbol
+  MENU:=1
   URL:=https://fukuchi.org/works/qrencode/
+  DEPENDS:=+QRENCODE_PNG:libpng
 endef
 
 define Package/libqrencode/description
@@ -37,6 +40,14 @@ Libqrencode is a C library for encoding data in a QR Code symbol,
 a kind of 2D symbology that can be scanned by handy terminals such
 as a mobile phone with CCD. The capacity of QR Code is up to 7000
 digits or 4000 characters, and is highly robust.
+endef
+
+define Package/libqrencode/config
+  config QRENCODE_PNG
+	bool "Enable PNG output"
+	depends on PACKAGE_libqrencode
+	select PACKAGE_libpng
+	default n
 endef
 
 define Package/qrencode
@@ -55,20 +66,19 @@ digits or 4000 characters, and is highly robust.
 endef
 
 CMAKE_OPTIONS += \
-	-DCMAKE_DISABLE_FIND_PACKAGE_PNG=ON \
-	-DWITHOUT_PNG=ON \
+	-DCMAKE_DISABLE_FIND_PACKAGE_PNG=O$(if $(CONFIG_QRENCODE_PNG),FF,N) \
+	-DWITHOUT_PNG=O$(if $(CONFIG_QRENCODE_PNG),FF,N) \
 	-DWITH_TOOLS=O$(if $(CONFIG_PACKAGE_qrencode),N,FF) \
 	-DWITH_TESTS=OFF \
 	-DBUILD_SHARED_LIBS=ON
 
-TARGET_CFLAGS += -flto
 TARGET_LDFLAGS += -Wl,--gc-sections
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include $(1)/usr/lib $(1)/usr/lib/pkgconfig
 	$(CP) $(PKG_INSTALL_DIR)/usr/include/qrencode.h $(1)/usr/include/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libqrencode.so* $(1)/usr/lib/
-	$(CP) $(PKG_BUILD_DIR)/libqrencode.pc $(1)/usr/lib/pkgconfig/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/libqrencode.pc $(1)/usr/lib/pkgconfig/
 	$(SED) 's,/usr/include,$$$${prefix}/include,g' $(1)/usr/lib/pkgconfig/libqrencode.pc
 	$(SED) 's,/usr/lib,$$$${exec_prefix}/lib,g' $(1)/usr/lib/pkgconfig/libqrencode.pc
 endef
