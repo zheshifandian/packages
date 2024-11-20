@@ -196,6 +196,8 @@ ifeq ($(BUILD_VARIANT),with-pam)
 TARGET_LDFLAGS += -lpthread
 endif
 
+TARGET_CFLAGS += -Wno-error=incompatible-pointer-types
+
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
