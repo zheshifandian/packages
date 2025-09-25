@@ -95,7 +95,7 @@ endef
 define GenPlugin
  define Package/$(1)
    $(call Package/coreutils/Default)
-   DEPENDS:=+coreutils $(DEPENDS_$(2))
+   DEPENDS:=coreutils $(DEPENDS_$(2))
    TITLE:=Utility $(2) from the GNU core utilities
    ALTERNATIVES:=$(ALTS_$(2))
  endef

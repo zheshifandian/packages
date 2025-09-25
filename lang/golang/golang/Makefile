@@ -16,8 +16,7 @@ PKG_RELEASE:=1
 
 GO_SOURCE_URLS:=https://dl.google.com/go/ \
                 https://mirrors.ustc.edu.cn/golang/ \
-                https://mirrors.nju.edu.cn/golang/ \
-                https://go.dev/dl/
+                https://mirrors.nju.edu.cn/golang/
 
 PKG_SOURCE:=go$(PKG_VERSION).src.tar.gz
 PKG_SOURCE_URL:=$(GO_SOURCE_URLS)
@@ -102,9 +101,9 @@ BOOTSTRAP_1_20_HASH:=1aef321a0e3e38b7e91d2d7eb64040666cabdcc77d383de3c9522d0d69b
 
 BOOTSTRAP_1_20_BUILD_DIR:=$(HOST_BUILD_DIR)/.go_bootstrap_1.20
 
-BOOTSTRAP_1_22_SOURCE:=go1.22.6.src.tar.gz
+BOOTSTRAP_1_22_SOURCE:=go1.22.9.src.tar.gz
 BOOTSTRAP_1_22_SOURCE_URL:=$(GO_SOURCE_URLS)
-BOOTSTRAP_1_22_HASH:=9e48d99d519882579917d8189c17e98c373ce25abaebb98772e2927088992a51
+BOOTSTRAP_1_22_HASH:=e81a362f51aee2125722b018e46714e6a055a1954283414c0f937e737013db22
 
 BOOTSTRAP_1_22_BUILD_DIR:=$(HOST_BUILD_DIR)/.go_bootstrap_1.22
 
