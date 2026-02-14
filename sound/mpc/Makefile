@@ -6,22 +6,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mpc
-PKG_VERSION:=0.33
+PKG_VERSION:=0.35
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://www.musicpd.org/download/mpc/0
-PKG_HASH:=4f40ccbe18f5095437283cfc525a97815e983cbfd3a29e48ff610fa4f1bf1296
+PKG_HASH:=382959c3bfa2765b5346232438650491b822a16607ff5699178aa1386e3878d4
 
 PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=meson/host
-PKG_INSTALL:=1
-
 include $(INCLUDE_DIR)/package.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 MESON_ARGS+=-Diconv=disabled -Ddocumentation=disabled
 

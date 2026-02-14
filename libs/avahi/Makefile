@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=avahi
 PKG_VERSION:=0.8
-PKG_RELEASE:=8
+PKG_RELEASE:=9
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/lathiat/avahi/releases/download/v$(PKG_VERSION) \
@@ -21,6 +21,7 @@ PKG_LICENSE:=LGPL-2.1-or-later
 PKG_LICENSE_FILES:=LICENSE
 PKG_CPE_ID:=cpe:/a:avahi:avahi
 
+PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
 
@@ -250,7 +251,7 @@ $(call Package/avahi/Default/description)
  For more information please see the avahi documentation.
 endef
 
-TARGET_CFLAGS += $(FPIC) -DGETTEXT_PACKAGE
+TARGET_CFLAGS += $(FPIC) -DGETTEXT_PACKAGE -std=gnu17
 
 CONFIGURE_ARGS += \
 	--enable-shared \

@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cloudflared
-PKG_VERSION:=2023.8.1
+PKG_VERSION:=2026.1.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/cloudflare/cloudflared/tar.gz/$(PKG_VERSION)?
-PKG_HASH:=e2cbb89bf73220a7bc4491facb96ff16c1880ebfcac679b5b17f21abab039c72
+PKG_HASH:=5e6a8e81de61f180ddee8cfb1b58e4978729bfacd774affa343867dca6fa244f
 
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
@@ -18,7 +18,7 @@ PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/cloudflare/cloudflared
 GO_PKG_LDFLAGS_X:=main.Version=$(PKG_VERSION)
@@ -31,7 +31,7 @@ define Package/cloudflared
   CATEGORY:=Network
   SUBMENU:=Web Servers/Proxies
   TITLE:=Cloudflare Tunnel client
-  URL:=https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-guide
+  URL:=https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/
   DEPENDS:=$(GO_ARCH_DEPENDS) +ca-bundle
 endef
 

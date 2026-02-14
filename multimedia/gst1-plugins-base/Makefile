@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gst1-plugins-base
-PKG_VERSION:=1.18.1
+PKG_VERSION:=1.20.5
 PKG_RELEASE:=1
 
 PKG_SOURCE:=gst-plugins-base-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://gstreamer.freedesktop.org/src/gst-plugins-base
-PKG_HASH:=1ba654d7de30f7284b4c7071b32f881b609733ce02ab6d9d9ea29386a036c641
+PKG_HASH:=11f911ef65f3095d7cf698a1ad1fc5242ac3ad6c9270465fb5c9e7f4f9c19b35
 PKG_BUILD_DIR:=$(BUILD_DIR)/gst-plugins-base-$(PKG_VERSION)
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org> \
@@ -22,11 +22,9 @@ PKG_LICENSE:=LGPL-2.1-or-later GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING.LIB COPYING
 PKG_CPE_ID:=cpe:/a:gstreamer:gst-plugins-base
 
-PKG_INSTALL:=1
-
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_gst1-mod-alsa \
@@ -248,7 +246,7 @@ $(eval $(call GstBuildLibrary,pbutils,utils,audio tag video,))
 $(eval $(call GstBuildLibrary,riff,RIFF media,audio tag,,))
 $(eval $(call GstBuildLibrary,rtp,RTP,,))
 $(eval $(call GstBuildLibrary,rtsp,RTSP,,))
-$(eval $(call GstBuildLibrary,sdp,SDP,rtp,))
+$(eval $(call GstBuildLibrary,sdp,SDP,pbutils rtp,))
 $(eval $(call GstBuildLibrary,tag,tag support,,))
 $(eval $(call GstBuildLibrary,video,video,,))
 
@@ -307,8 +305,8 @@ $(eval $(call GstBuildPlugin,typefindfunctions,'typefind' functions,audio pbutil
 $(eval $(call GstBuildPlugin,videoconvert,video format conversion,video,,))
 $(eval $(call GstBuildPlugin,videorate,Adjusts video frames,video,,))
 $(eval $(call GstBuildPlugin,videoscale,Resizes video,video,,))
-$(eval $(call GstBuildPlugin,videotestsrc,video test,video,,+liboil))
-$(eval $(call GstBuildPlugin,volume,volume,audio controller,,+liboil))
+$(eval $(call GstBuildPlugin,videotestsrc,video test,video,,))
+$(eval $(call GstBuildPlugin,volume,volume,audio controller,,))
 
 $(eval $(call GstBuildPlugin,alsa,ALSA audio source/sink,audio tag,,+alsa-lib))
 $(eval $(call GstBuildPlugin,ivorbisdec,Integer Vorbis decoder plugin for devices without floating point,audio tag,,+libvorbisidec))

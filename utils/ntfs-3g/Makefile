@@ -6,27 +6,23 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ntfs-3g
-PKG_VERSION:=2017.3.23
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=2022.10.3
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)_ntfsprogs-$(PKG_VERSION).tgz
 PKG_SOURCE_URL:=https://www.tuxera.com/opensource/
-PKG_HASH:=3e5a021d7b761261836dcb305370af299793eedbded731df3d6943802e1262d5
+PKG_HASH:=f20e36ee68074b845e3629e6bced4706ad053804cbaf062fbae60738f854170c
 
-PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>
 PKG_LICENSE:=GPL-2.0-only LGPL-2.1-or-later
 PKG_LICENSE_FILES:=COPYING COPYING.LIB
-PKG_CPE_ID:=cpe:/a:ntfs-3g:ntfs-3g
+PKG_CPE_ID:=cpe:/a:tuxera:ntfs-3g
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
 
-# release contains fuseext/int hint
-PKG_RELEASE:=$(PKG_RELEASE)$(if $(CONFIG_PACKAGE_NTFS-3G_USE_LIBFUSE),-fuseext,-fuseint)
-
 # define build dir, respect fuseext/int
-PKG_BUILD_DIR:= $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)
+PKG_BUILD_DIR:= $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -53,7 +49,6 @@ define Package/ntfs-3g/description
   Contains:
    - ntfs-3g
    - ntfs-3g.probe
-   - mount.ntfs (symlink to ntfs-3g)
    - mount.ntfs-3g (symlink to ntfs-3g)
 
 endef
@@ -62,7 +57,7 @@ define Package/ntfs-3g/config
 config PACKAGE_NTFS-3G_USE_LIBFUSE
 	bool "use external FUSE library, selects package libfuse"
 	depends on PACKAGE_ntfs-3g
-	---help---
+	help
 	Ntfs-3g by default uses a minimalized lite version of FUSE.
 	If libfuse is part of your filesystem anyway (because of sshfs, owfs
 	etc.) it makes sense to activate this option and save some kilobytes
@@ -132,7 +127,7 @@ else
 endif
 
 # enable ntfsprogs and extras
-ifneq ($(CONFIG_PACKAGE_ntfs-3g-utils)$(SDK)$(DEVELOPER),)
+ifneq ($(CONFIG_PACKAGE_ntfs-3g-utils)$(DEVELOPER),)
 	CONFIGURE_ARGS += --enable-ntfsprogs --enable-extras
 else
 	CONFIGURE_ARGS += --disable-ntfsprogs --disable-extras
@@ -161,7 +156,6 @@ define Package/ntfs-3g/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libntfs-3g.so.* $(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/sbin
-	$(LN) ../usr/bin/ntfs-3g $(1)/sbin/mount.ntfs
 	$(LN) ../usr/bin/ntfs-3g $(1)/sbin/mount.ntfs-3g
 endef
 
@@ -207,12 +201,11 @@ fi
 endef
 
 define Package/ntfs-3g-utils/install
-	$(INSTALL_DIR) $(1)/sbin
-	$(LN) ../usr/sbin/mkntfs $(1)/sbin/mkfs.ntfs
-	$(INSTALL_DIR) $(1)/usr/bin
+	rm -f $(PKG_INSTALL_DIR)/usr/sbin/mkfs.ntfs
+	$(INSTALL_DIR) $(1)/usr/{bin,sbin}
 	$(FIND) $(PKG_INSTALL_DIR)/usr/bin/ -type f ! -regex '.*[^/]*ntfs-3g[^/]*' -exec $(INSTALL_BIN) {} $(1)/usr/bin/ \;
-	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/* $(1)/usr/sbin/
+	$(LN) mkntfs $(1)/usr/sbin/mkfs.ntfs
 endef
 
 $(eval $(call BuildPackage,ntfs-3g))

@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=liburing
-PKG_VERSION:=0.7
-PKG_RELEASE:=2
+PKG_VERSION:=2.7
+PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://git.kernel.dk/cgit/liburing/snapshot
-PKG_HASH:=05d0cf8493d573c76b11abfcf34aabc7153affebe17ff95f9ae88b0de062a59d
+PKG_HASH:=cc5268f97d089bc21d3d5848959e6620b2dfc85023b92479dad0496b2c51df06
 
 PKG_MAINTAINER:=Christian Lachner <gladiac@gmail.com>
 PKG_LICENSE:=MIT
@@ -22,6 +22,7 @@ define Package/liburing
   CATEGORY:=Libraries
   TITLE:=io_uring library
   URL:=https://git.kernel.dk/cgit/liburing
+  DEPENDS:=@KERNEL_IO_URING
 endef
 
 define Package/liburing/description

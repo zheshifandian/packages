@@ -8,21 +8,22 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tor
-PKG_VERSION:=0.4.7.10
+PKG_VERSION:=0.4.8.21
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://dist.torproject.org/ \
 	https://archive.torproject.org/tor-package-archive
-PKG_HASH:=647e56dfa59ea36dab052027fcfc7663905c826c03509363c456900ecd435a5b
-PKG_MAINTAINER:=Hauke Mehrtens <hauke@hauke-m.de> \
-		Peter Wagner <tripolar@gmx.at>
+PKG_HASH:=eaf6f5b73091b95576945eade98816ddff7cd005befe4d94718a6f766b840903
+PKG_MAINTAINER:=Rui Salvaterra <rsalvaterra@gmail.com>
+PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE
 PKG_CPE_ID:=cpe:/a:torproject:tor
 
 PKG_INSTALL:=1
 PKG_FIXUP:=autoreconf
 PKG_BUILD_PARALLEL:=1
+PKG_BUILD_FLAGS:=gc-sections lto
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -112,6 +113,7 @@ endef
 
 define Package/tor/conffiles
 /etc/tor/torrc
+/etc/tor/torrc.d/*
 /var/lib/tor/fingerprint
 /var/lib/tor/keys/*
 /etc/config/tor
@@ -139,8 +141,8 @@ ifeq ($(BUILD_VARIANT),basic)
   CONFIGURE_ARGS += --disable-module-relay
 endif
 
-TARGET_CFLAGS += -ffunction-sections -fdata-sections -flto
-TARGET_LDFLAGS += -Wl,--gc-sections -flto
+
+TARGET_CFLAGS += $(if $(CONFIG_OPENSSL_ENGINE),,-DDISABLE_ENGINES)
 
 CONFIGURE_VARS += \
 	CROSS_COMPILE="yes" \

@@ -168,11 +168,6 @@ aria2_start() {
 	config_file_tmp="$config_dir/$NAME.conf.tmp"
 	session_file="$config_dir/$NAME.session.$section"
 
-	_make_dir "$dir" || {
-		_err "Can't create download dir: $dir"
-		return 1
-	}
-
 	_make_dir "$config_dir" || {
 		_err "Can't create config dir: $config_dir"
 		return 1
@@ -346,6 +341,7 @@ aria2_start() {
 		procd_set_param user "$user"
 
 	procd_add_jail "$NAME.$section" log
+	procd_add_jail_mount "/usr/lib/ossl-modules"
 	procd_add_jail_mount "$ca_certificate" "$certificate" "$rpc_certificate" "$rpc_private_key"
 	procd_add_jail_mount_rw "$dir" "$config_dir" "$log"
 	procd_close_instance

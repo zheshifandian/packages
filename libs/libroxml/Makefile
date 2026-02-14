@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libroxml
 PKG_VERSION:=3.0.2
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://download.libroxml.net/pool/v3.x
@@ -20,7 +20,6 @@ PKG_LICENSE:=LGPL-2.1-or-later
 PKG_LICENSE_FILES:=License.txt
 
 CMAKE_INSTALL:=1
-PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk

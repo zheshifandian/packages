@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=safe-search
 PKG_VERSION:=2.0.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=11
 PKG_LICENSE:=MIT
 PKG_MAINTAINER:=Gregory L. Dietsche <Gregory.Dietsche@cuw.edu>
 
@@ -23,7 +23,7 @@ endef
 define Package/safe-search/description
 This package prevents adult content from appearing in search results by
 configuring dnsmasq to force all devices on your network to use Google and
-Bing's Safe Search IP addresses. This is designed to be approperiate for most
+Bing's Safe Search IP addresses. This is designed to be appropriate for most
 businesses and families. The default filtering rules do not interfere with
 normal web browsing.
 endef

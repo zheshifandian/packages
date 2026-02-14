@@ -8,18 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cshark
-PKG_SOURCE_DATE:=2018-08-20
-PKG_SOURCE_VERSION:=7a7cf7f35074b85c6fb0c52067e640d2433ef73b
-PKG_RELEASE:=1
+PKG_SOURCE_DATE:=2020-07-22
+PKG_SOURCE_VERSION:=c0d32fb6df3cd095fecac8aefe8d188170246403
+PKG_RELEASE:=3
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/cloudshark/cshark.git
-PKG_MIRROR_HASH:=b09822e93d7de7f4aa9fa018c304ebc52dd3419de3dd2eff463986d3a3b8ca71
+PKG_MIRROR_HASH:=85e6e76ad09f235f4eab1f7f880d281906a344a2b2de66a49823991219d21f01
 
 PKG_MAINTAINER:=Luka Perkov <luka@openwrt.org>
 PKG_LICENSE:=BSD-2-Clause
-
-PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -49,11 +47,6 @@ define Package/cshark/install
 	$(INSTALL_CONF) \
 		$(PKG_BUILD_DIR)/config/cshark \
 		$(1)/etc/config/
-
-	$(INSTALL_DIR) $(1)/etc/ssl/certs
-	$(INSTALL_CONF) \
-		$(PKG_BUILD_DIR)/config/ca-the_usertrust_network.pem \
-		$(1)/etc/ssl/certs/
 endef
 
 

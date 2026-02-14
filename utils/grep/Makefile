@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2016 OpenWrt.org
+# Copyright (C) 2010-2025 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=grep
-PKG_VERSION:=3.6
+PKG_VERSION:=3.12
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@GNU/grep
-PKG_HASH:=667e15e8afe189e93f9f21a7cd3a7b3f776202f417330b248c2ad4f997d9373e
+PKG_HASH:=2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9
 
 PKG_MAINTAINER:=Julen Landa Alustiza <julen@zokormazo.info>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -25,11 +25,14 @@ PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
+MAKE_FLAGS += SHELL="/bin/sh"
+TARGET_CFLAGS += -std=c17
+
 define Package/grep
   SECTION:=utils
   CATEGORY:=Utilities
   TITLE:=grep search utility - full version
-  DEPENDS:=+libpcre
+  DEPENDS:=+libpcre2
   URL:=https://www.gnu.org/software/grep/
   ALTERNATIVES:=\
     300:/bin/egrep:/usr/libexec/egrep-gnu \

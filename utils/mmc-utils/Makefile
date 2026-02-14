@@ -8,15 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mmc-utils
-PKG_RELEASE:=2
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://git.kernel.org/pub/scm/linux/kernel/git/cjb/mmc-utils.git
-PKG_SOURCE_DATE:=2019-10-10
-PKG_SOURCE_VERSION:=73d6c59af8d1bcedf5de4aa1f5d5b7f765f545f5
-PKG_MIRROR_HASH:=6ff0b32136c7bc64a099f1185a3ca063b5d644056476456a23029e9f6dfa789a
+PKG_SOURCE_URL:=https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git
+PKG_SOURCE_DATE:=2025-12-21
+PKG_SOURCE_VERSION:=8f41ccbb40b887325f243bd73695a9e814610520
+PKG_MIRROR_HASH:=89fcbf96113e9407dc0890bff71425daed73c20f8a83a8fdadcc69916a32881f
 
-PKG_LICENSE:=GPL-2.0
+PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=
 
 PKG_MAINTAINER:=Michael Heimpold <mhei@heimpold.de>
@@ -27,7 +27,7 @@ define Package/mmc-utils
   SECTION:=utils
   CATEGORY:=Utilities
   TITLE:=Userspace tools for MMC/SD devices
-  URL:=http://git.kernel.org/cgit/linux/kernel/git/cjb/mmc-utils.git
+  URL:=https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git
 endef
 
 define Package/mmc-utils/description
@@ -40,7 +40,8 @@ endef
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \
-	        $(TARGET_CONFIGURE_OPTS) CFLAGS="$(TARGET_CFLAGS) -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2" \
+	        $(TARGET_CONFIGURE_OPTS) CFLAGS="$(TARGET_CFLAGS) -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 \
+	        -UVERSION -DVERSION=\\\"$(shell echo $(PKG_SOURCE_VERSION) | cut -c -6)\\\"" C=0 \
 	        mmc
 endef
 

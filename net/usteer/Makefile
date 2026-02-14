@@ -3,13 +3,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=usteer
-PKG_SOURCE_DATE:=2022-05-17
-PKG_SOURCE_VERSION:=7afab9604b580266a81935fb1d9df4c3b33831a3
+PKG_SOURCE_DATE:=2025-10-04
+PKG_SOURCE_VERSION:=1d6524c6e6b58853f053c7816249a8f68ad9b0e8
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=https://git.openwrt.org/project/usteer.git
-PKG_MIRROR_HASH:=c6982609698ed81da6e651613728e3a8edadd3e7f56ebfb8f0ea30c6c786866d
+PKG_MIRROR_HASH:=5f0525c441a023c07e6cb1b9e895ee0fdd84cd67043a905c2954caaa934e4eb8
 
 PKG_MAINTAINER:=David Bauer <mail@david-bauer.net>
 PKG_LICENSE:=GPL-2.0-only
@@ -40,4 +40,3 @@ define Package/usteer/install
 endef
 
 $(eval $(call BuildPackage,usteer))
-

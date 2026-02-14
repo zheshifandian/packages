@@ -5,27 +5,21 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=irqbalance
-PKG_VERSION:=1.9.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=1.9.5
+PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/Irqbalance/irqbalance.git
-PKG_SOURCE_VERSION:=80d5fbb947debe221e4c23c0ee0f4f2b89a99443
-PKG_MIRROR_HASH:=9af2e51d2696bc51400223dee2009071bee5f12b3a5050f18c7de23632e2190d
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_LICENSE:=GPLv2
+PKG_SOURCE_VERSION:=v$(PKG_VERSION)
+PKG_MIRROR_HASH:=a9d53209c5e31503cdc61518ca5887bb01cf1dab546928272a9aa7051713e4be
 
 PKG_MAINTAINER:=Hannu Nyman <hannu.nyman@iki.fi>
-
-PKG_FIXUP:=autoreconf
-PKG_REMOVE_FILES:=autogen.sh
-
-PKG_BUILD_PARALLEL:=1
-
-include $(INCLUDE_DIR)/nls.mk
+PKG_LICENSE:=GPL-2.0-or-later
+PKG_LICENSE_FILES:=COPYING
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/nls.mk
+include $(INCLUDE_DIR)/meson.mk
 
 PKG_BUILD_DEPENDS += glib2
 
@@ -43,34 +37,20 @@ define Package/irqbalance/description
  increase performance.
 endef
 
-CONFIGURE_ARGS+= \
-	--disable-numa \
-	--with-libcap_ng=no \
-	--with-systemd=no \
-	--without-irqbalance-ui \
-	--enable-static=glib2
-
-GLIB2_LIBS="$(STAGING_DIR)/usr/lib/libglib-2.0.a"
-
-ifeq ($(CONFIG_BUILD_NLS),y)
-	GLIB2_LIBS += $(INTL_LDFLAGS) -lintl
-endif
-
-ifeq ($(CONFIG_USE_GLIBC),y)
-	GLIB2_LIBS += -lpthread
-endif
-
-CONFIGURE_VARS += \
-	GLIB2_LIBS="$(GLIB2_LIBS) \
-		$(ICONV_LDFLAGS) -liconv"
-
 define Package/irqbalance/conffiles
 /etc/config/irqbalance
 endef
 
+MESON_ARGS += \
+	-Dcapng=disabled \
+	-Dnuma=disabled \
+	-Dsystemd=disabled \
+	-Dthermal=disabled \
+	-Dui=disabled
+
 define Package/irqbalance/install
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/irqbalance $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/irqbalance $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/irqbalance.init $(1)/etc/init.d/irqbalance
 	$(INSTALL_DIR) $(1)/etc/config

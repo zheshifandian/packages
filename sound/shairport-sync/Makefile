@@ -7,12 +7,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shairport-sync
-PKG_VERSION:=3.3.8
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=4.3.6
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/mikebrady/shairport-sync/tar.gz/$(PKG_VERSION)?
-PKG_HASH:=c92f9a2d86dd1138673abc66e0010c94412ad6a46da8f36c3d538f4fa6b9faca
+PKG_HASH:=f100ed80938ff63d305a260b0f0dd32d012ea9b64884b2802d46d862923439b8
 
 PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>, \
 		Mike Brady <mikebrady@eircom.net>
@@ -29,7 +29,7 @@ define Package/shairport-sync/default
   SECTION:=sound
   CATEGORY:=Sound
   TITLE:=AirPlay compatible audio player
-  DEPENDS:=@AUDIO_SUPPORT +libpthread +alsa-lib +libalac +libconfig +libdaemon +libpopt
+  DEPENDS:=@AUDIO_SUPPORT +libpthread +alsa-lib +libconfig +libdaemon +libpopt +libmosquitto
   PROVIDES:=shairport-sync
   URL:=https://github.com/mikebrady/shairport-sync
 endef
@@ -37,7 +37,7 @@ endef
 define Package/shairport-sync-openssl
   $(Package/shairport-sync/default)
   TITLE+= (openssl)
-  DEPENDS+= +libopenssl +libavahi-client +libsoxr
+  DEPENDS+= +libopenssl +libavahi-client +libsoxr +libplist +libsodium +libgcrypt +libffmpeg-full +libuuid +nqptp
   VARIANT:=openssl
 endef
 
@@ -73,16 +73,28 @@ define Package/shairport-sync-mini/description
   $(Package/shairport-sync/default/description)
 
   Minimal version uses mbed TLS and does not include libsoxr and avahi support.
+  Only supports classic AirPlay aka AirPlay 1. Please note that the minimal
+  version does not make use of the FFmpeg ALAC decoder that fixes some security
+  issues in the original decoder.
+endef
+
+define Package/shairport-sync-mbedtls/description
+  $(Package/shairport-sync/default/description)
+
+  mbed TLS version only supports classic AirPlay aka AirPlay 1. Please note that
+  the mbed TLS version does not make use of the FFmpeg ALAC decoder that fixes
+  some security issues in the original decoder.
 endef
 
 CONFIGURE_ARGS += \
 	--with-alsa \
-	--with-apple-alac \
 	--with-libdaemon \
+	--with-pipe \
+	--with-mqtt-client \
 	--with-metadata
 
 ifeq ($(BUILD_VARIANT),openssl)
-  CONFIGURE_ARGS+= --with-ssl=openssl
+  CONFIGURE_ARGS+= --with-ssl=openssl --with-airplay-2
 endif
 
 ifeq ($(BUILD_VARIANT),mbedtls)
@@ -94,6 +106,8 @@ ifeq ($(BUILD_VARIANT),mini)
 else
   CONFIGURE_ARGS+= --with-avahi --with-soxr
 endif
+
+TARGET_LDFLAGS += -Wl,--as-needed
 
 define Package/shairport-sync/default/conffiles
 /etc/config/shairport-sync
@@ -109,10 +123,10 @@ define Package/shairport-sync/default/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/shairport-sync $(1)/usr/bin/
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/etc/shairport-sync.conf $(1)/etc/shairport-sync.conf
-	#$(INSTALL_DIR) $(1)/etc/init.d
-	#$(INSTALL_BIN) ./files/shairport-sync.init $(1)/etc/init.d/shairport-sync
-	#$(INSTALL_DIR) $(1)/etc/config
-	#$(INSTALL_CONF) ./files/shairport-sync.config $(1)/etc/config/shairport-sync
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/shairport-sync.init $(1)/etc/init.d/shairport-sync
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_CONF) ./files/shairport-sync.config $(1)/etc/config/shairport-sync
 endef
 
 Package/shairport-sync-openssl/install = $(Package/shairport-sync/default/install)

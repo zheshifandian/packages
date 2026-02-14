@@ -11,13 +11,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=boost
-PKG_VERSION:=1.75.0
-PKG_SOURCE_VERSION:=1_75_0
-PKG_RELEASE:=3
+PKG_VERSION:=1.90.0
+PKG_SOURCE_VERSION:=1_90_0
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)_$(PKG_SOURCE_VERSION).tar.bz2
-PKG_SOURCE_URL:=@SF/$(PKG_NAME)/$(PKG_NAME)/$(PKG_VERSION) https://dl.bintray.com/boostorg/release/$(PKG_VERSION)/source/
-PKG_HASH:=953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb
+PKG_SOURCE_URL:=https://archives.boost.io/release/$(PKG_VERSION)/source @SF/$(PKG_NAME)/$(PKG_NAME)/$(PKG_VERSION)
+PKG_HASH:=49551aff3b22cbc5c5a9ed3dbc92f0e23ea50a0f7325b0d198b705e8ee3fc305
 
 PKG_MAINTAINER:=Carlos M. Ferreira <carlosmf.pt@gmail.com>
 PKG_LICENSE:=BSL-1.0
@@ -29,7 +29,7 @@ HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/$(PKG_NAME)_$(PKG_SOURCE_VERSION)
 
 HOST_BUILD_PARALLEL:=1
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16 gc-sections lto
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -42,12 +42,14 @@ define Package/boost/Default
 endef
 
 define Package/boost/description
-This package provides the Boost v1.75.0 libraries.
+This package provides the Boost v1.90.0 libraries.
 Boost is a set of free, peer-reviewed, portable C++ source libraries.
 
 This package provides the following run-time libraries:
  - atomic
+ - charconv
  - chrono
+ - cobalt
  - container
  - context
  - contract
@@ -70,14 +72,14 @@ This package provides the following run-time libraries:
  - regex
  - serialization and wserialization
  - stackstrace
- - system
  - thread
  - timer
  - type_erasure
+ - url
  - wave
 
 There are many more header-only libraries supported by Boost.
-See more at http://www.boost.org/doc/libs/1_75_0/
+See more at http://www.boost.org/doc/libs/1_90_0/
 endef
 
 PKG_BUILD_DEPENDS:=boost/host
@@ -235,7 +237,7 @@ define Package/boost/config
 		config boost-use-name-tags
 			bool "Use tagged names."
 			help
-				Add name tags the lib files, to diferentiate each library version:
+				Add name tags the lib files, to differentiate each library version:
 				  "-mt" for multi-threading.
 				  "-d" for debugging.
 				  "-s" for runtime static link".
@@ -295,7 +297,7 @@ define Package/boost-test
 	$(call Package/boost/Default)
 	TITLE+= (test)
 	HIDDEN:=1
-	DEPENDS+=+boost-system +boost-timer
+	DEPENDS+=+boost-timer
 endef
 
 define Build/Configure
@@ -333,36 +335,38 @@ define DefineBoostLibrary
   endef
 endef
 
-$(eval $(call DefineBoostLibrary,atomic,system))
-$(eval $(call DefineBoostLibrary,chrono,system))
+$(eval $(call DefineBoostLibrary,atomic))
+$(eval $(call DefineBoostLibrary,charconv,,,,libquadmath))
+$(eval $(call DefineBoostLibrary,chrono))
+$(eval $(call DefineBoostLibrary,cobalt,container context date_time,,,libopenssl))
 $(eval $(call DefineBoostLibrary,container))
-$(eval $(call DefineBoostLibrary,context,chrono system,,!boost-context-exclude))
-$(eval $(call DefineBoostLibrary,contract,system))
-$(eval $(call DefineBoostLibrary,coroutine,system chrono context thread,,!boost-coroutine-exclude))
+$(eval $(call DefineBoostLibrary,context,chrono ,,!boost-context-exclude))
+$(eval $(call DefineBoostLibrary,contract,atomic chrono container date_time thread))
+$(eval $(call DefineBoostLibrary,coroutine,chrono context thread,,!boost-coroutine-exclude))
 $(eval $(call DefineBoostLibrary,date_time))
 #$(eval $(call DefineBoostLibrary,exception,,))
 $(eval $(call DefineBoostLibrary,fiber,coroutine filesystem,,!boost-fiber-exclude))
-$(eval $(call DefineBoostLibrary,filesystem,system))
-$(eval $(call DefineBoostLibrary,graph,regex))
-$(eval $(call DefineBoostLibrary,iostreams,,,,zlib liblzma libbz2 libzstd))
+$(eval $(call DefineBoostLibrary,filesystem,atomic))
+$(eval $(call DefineBoostLibrary,graph))
+$(eval $(call DefineBoostLibrary,iostreams,random regex,,,zlib liblzma libbz2 libzstd))
 $(eval $(call DefineBoostLibrary,json,container))
-$(eval $(call DefineBoostLibrary,locale,system chrono thread,,,icu))
-$(eval $(call DefineBoostLibrary,log,system chrono date_time thread filesystem regex))
-$(eval $(call DefineBoostLibrary,math))
+$(eval $(call DefineBoostLibrary,locale,chrono thread charconv,,,icu))
+$(eval $(call DefineBoostLibrary,log,chrono date_time thread filesystem regex serialization))
+$(eval $(call DefineBoostLibrary,math, container random))
 #$(eval $(call DefineBoostLibrary,mpi,,)) # OpenMPI does no exist in OpenWRT at this time.
 $(eval $(call DefineBoostLibrary,nowide))
-$(eval $(call DefineBoostLibrary,program_options))
-$(eval $(call DefineBoostLibrary,python3,,,,python3-base))
-$(eval $(call DefineBoostLibrary,random,system))
+$(eval $(call DefineBoostLibrary,program_options,container))
+$(eval $(call DefineBoostLibrary,python3,container graph,,,python3-base))
+$(eval $(call DefineBoostLibrary,random))
 $(eval $(call DefineBoostLibrary,regex,,,,icu))
 $(eval $(call DefineBoostLibrary,serialization))
 $(eval $(call DefineBoostLibrary,wserialization,serialization))
 $(eval $(call DefineBoostLibrary,stacktrace))
-$(eval $(call DefineBoostLibrary,system))
-$(eval $(call DefineBoostLibrary,thread,system chrono atomic))
+$(eval $(call DefineBoostLibrary,thread,chrono atomic container date_time))
 $(eval $(call DefineBoostLibrary,timer,chrono))
-$(eval $(call DefineBoostLibrary,type_erasure,chrono system thread))
-$(eval $(call DefineBoostLibrary,wave,date_time thread filesystem))
+$(eval $(call DefineBoostLibrary,type_erasure,chrono thread))
+$(eval $(call DefineBoostLibrary,url))
+$(eval $(call DefineBoostLibrary,wave,date_time thread filesystem container serialization regex))
 
 include $(INCLUDE_DIR)/host-build.mk
 
@@ -372,17 +376,21 @@ define Host/Compile
 
 	( cd $(HOST_BUILD_DIR) ; \
 		./bootstrap.sh --prefix=$(STAGING_DIR_HOSTPKG) \
-			--with-libraries=context,filesystem,program_options,regex,system ;\
+			--with-libraries=context,filesystem,program_options,regex ;\
 		./b2 --ignore-site-config install )
 endef
 
 CONFIGURE_PREFIX:=$(PKG_INSTALL_DIR)
-TARGET_LDFLAGS += -pthread -lrt -lstdc++ -Wl,--gc-sections,--as-needed,--print-gc-sections
+TARGET_LDFLAGS += -pthread -lrt -lstdc++ -Wl,--as-needed,--print-gc-sections
 
 TARGET_CFLAGS += \
-	$(if $(CONFIG_SOFT_FLOAT),-DBOOST_NO_FENV_H) -fPIC -ffunction-sections -fdata-sections -flto
+	$(if $(CONFIG_SOFT_FLOAT),-DBOOST_NO_FENV_H) -fPIC
 
-EXTRA_CXXFLAGS += $(if $(CONFIG_GCC_USE_VERSION_10),-std=gnu++20,$(if $(CONFIG_GCC_USE_VERSION_5),-std=gnu++14,-std=gnu++17))
+ifeq ($(word 1,$(subst ., ,$(call qstrip,$(CONFIG_GCC_VERSION)))),11)
+    EXTRA_CXXFLAGS += -std=gnu++20
+else
+    EXTRA_CXXFLAGS += -std=gnu++23
+endif
 
 ifneq ($(findstring mips,$(ARCH)),)
     BOOST_ABI = o32

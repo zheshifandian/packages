@@ -9,18 +9,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ffmpeg
-PKG_VERSION:=4.3.5
+PKG_VERSION:=6.1.3
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://ffmpeg.org/releases/
-PKG_HASH:=8e7a2f6d94b5130edd82d8b55ae75da5fc02f98698e8cc6772c413223b7b9092
+PKG_HASH:=bc5f1e4a4d283a6492354684ee1124129c52293bcfc6a9169193539fbece3487
 PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>, \
 		Ian Leonard <antonlacon@gmail.com>
 
 PKG_LICENSE:=LGPL-2.1-or-later GPL-2.0-or-later LGPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING.GPLv2 COPYING.GPLv3 COPYING.LGPLv2.1 COPYING.LGPLv3
 PKG_CPE_ID:=cpe:/a:ffmpeg:ffmpeg
+
+PKG_BUILD_PARALLEL:=1
 
 FFMPEG_CUSTOM_ENCODERS:= \
 	ac3 \
@@ -67,6 +69,7 @@ FFMPEG_CUSTOM_DECODERS:= \
 
 FFMPEG_CUSTOM_MUXERS:= \
 	ac3 \
+	avi \
 	ffm \
 	h264 \
 	hevc \
@@ -228,7 +231,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/ffmpeg/Default
  TITLE:=FFmpeg
  URL:=https://ffmpeg.org/
- DEPENDS+= +libpthread
+ DEPENDS+= +libatomic
 endef
 
 define Package/ffmpeg/Default/description
@@ -246,7 +249,7 @@ $(call Package/ffmpeg/Default)
  SECTION:=multimedia
  CATEGORY:=Multimedia
  TITLE+= program
- DEPENDS+= +libffmpeg-full +openssl-util
+ DEPENDS+= +libffmpeg-full
  VARIANT:=full
 endef
 
@@ -344,7 +347,8 @@ endef
 define Package/libffmpeg-full
 $(call Package/libffmpeg/Default)
  TITLE+= (full)
- DEPENDS+= +alsa-lib +libopenssl +libopus \
+ DEPENDS+= +alsa-lib +libgnutls +PACKAGE_libopus:libopus \
+    +PACKAGE_libv4l:libv4l \
     +SOFT_FLOAT:shine \
     +!SOFT_FLOAT:lame-lib \
     +PACKAGE_libx264:libx264 \
@@ -376,18 +380,18 @@ endef
 
 
 # Strip off FPU notation
-REAL_CPU_TYPE:=$(firstword $(subst +, ,$(CONFIG_CPU_TYPE)))
+REAL_CPU_TYPE:=$(call qstrip,$(firstword $(subst +, ,$(CONFIG_CPU_TYPE))))
 # Fixup cpu types recogized by ffmpeg configure
 REAL_CPU_TYPE:=$(subst octeonplus,octeon+,$(REAL_CPU_TYPE))
 
 FFMPEG_CONFIGURE:= \
-	CFLAGS="$(TARGET_CFLAGS) $(TARGET_CPPFLAGS) $(FPIC)" \
+	CFLAGS="$(TARGET_CFLAGS) $(TARGET_CPPFLAGS) $(FPIC) -Wno-error=incompatible-pointer-types" \
 	LDFLAGS="$(TARGET_LDFLAGS)" \
 	./configure \
 	--enable-cross-compile \
 	--cross-prefix="$(TARGET_CROSS)" \
 	--arch="$(ARCH)" \
-	$(if $(REAL_CPU_TYPE),--cpu=$(call qstrip,$(REAL_CPU_TYPE)),) \
+	$(if $(REAL_CPU_TYPE),--cpu=$(REAL_CPU_TYPE),) \
 	--target-os=linux \
 	--prefix="/usr" \
 	--pkg-config="pkg-config" \
@@ -395,7 +399,6 @@ FFMPEG_CONFIGURE:= \
 	--enable-static \
 	--enable-pthreads \
 	--enable-zlib \
-	--enable-protocol=rtmp,rtmps \
 	--disable-doc \
 	--disable-debug \
 	\
@@ -467,14 +470,14 @@ ifeq ($(BUILD_VARIANT),full)
 	)
 
 	FFMPEG_CONFIGURE+= \
-		--enable-nonfree \
-		--enable-openssl \
+		--enable-gnutls \
 		$(if $(CONFIG_BUILD_PATENTED),, \
 			$(call FFMPEG_DISABLE,decoder,$(FFMPEG_PATENTED_DECODERS)) \
 			$(call FFMPEG_DISABLE,muxer,$(FFMPEG_PATENTED_MUXERS)) \
 			$(call FFMPEG_DISABLE,demuxer,$(FFMPEG_PATENTED_DEMUXERS)) \
 			$(call FFMPEG_DISABLE,parser,$(FFMPEG_PATENTED_PARSERS))) \
-		$(if $(CONFIG_PACKAGE_libopus),--enable-libopus)
+		$(if $(CONFIG_PACKAGE_libopus),--enable-libopus) \
+		$(if $(CONFIG_PACKAGE_libv4l),--enable-libv4l2)
   ifeq ($(CONFIG_SOFT_FLOAT),y)
 	FFMPEG_CONFIGURE+= \
 		--enable-small \
@@ -531,6 +534,12 @@ ifeq ($(BUILD_VARIANT),custom)
 	--disable-programs \
 	--disable-avfilter \
 	--disable-swresample
+  endif
+
+  ifneq ($(CONFIG_PACKAGE_ffmpeg-custom),n)
+      FFMPEG_CONFIGURE+= \
+	--enable-avfilter \
+	--enable-ffmpeg
   endif
 
   FFMPEG_CONFIGURE+= \
@@ -635,7 +644,7 @@ define Build/Configure
 endef
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) \
+	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
 		all install
 endef
@@ -647,6 +656,11 @@ define Build/InstallDev/custom
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lib{avcodec,avdevice,avformat,avutil}.{a,so*} $(1)/usr/lib/
 ifeq ($(CONFIG_FFMPEG_CUSTOM_PROGRAMS),y)
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lib{avfilter,swresample}.{a,so*} $(1)/usr/lib/
+endif
+ifeq ($(BUILD_VARIANT),custom)
+  ifneq ($(CONFIG_PACKAGE_ffmpeg-custom),n)
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libavfilter.{a,so*} $(1)/usr/lib/
+  endif
 endif
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/lib{avcodec,avdevice,avformat,avutil}.pc $(1)/usr/lib/pkgconfig/
@@ -729,6 +743,11 @@ ifeq ($(CONFIG_FFMPEG_CUSTOM_SELECT_libx264),y)
 endif
 ifeq ($(CONFIG_FFMPEG_CUSTOM_PROGRAMS),y)
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lib{avfilter,swresample}.so.* $(1)/usr/lib/
+endif
+ifeq ($(BUILD_VARIANT),custom)
+  ifneq ($(CONFIG_PACKAGE_ffmpeg-custom),n)
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libavfilter.so.* $(1)/usr/lib/
+  endif
 endif
 endef
 

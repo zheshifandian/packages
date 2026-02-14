@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=lksctp-tools
-PKG_VERSION:=1.0.18
+PKG_VERSION:=1.0.21
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/sctp/lksctp-tools/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=3e9ab5b3844a8b65fc8152633aafe85f406e6da463e53921583dfc4a443ff03a
+PKG_HASH:=8738bf17ecffbbe2440a6e2ffaf1cbcebb633fc99d63d88761af35c02a571893
 
 PKG_MAINTAINER:=
 PKG_LICENSE:=GPL-2.0

@@ -8,19 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libical
-PKG_VERSION:=3.0.6
+PKG_VERSION:=3.0.20
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_HASH:=5c8a21c2b732ece4a33e5c862970b4f35a8548bbcda50de5695f6fc211ac4d97
+PKG_HASH:=e73de92f5a6ce84c1b00306446b290a2b08cdf0a80988eca0a2c9d5c3510b4c2
 PKG_SOURCE_URL:=https://github.com/libical/libical/releases/download/v$(PKG_VERSION)/
 
 PKG_MAINTAINER:=Jose Zapater <jzapater@gmail.com>
 PKG_LICENSE:=LGPL-2.1-or-later MPL-2.0
 PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:libical_project:libical
 
 CMAKE_INSTALL:=1
-PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk

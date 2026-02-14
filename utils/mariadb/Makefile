@@ -1,6 +1,5 @@
 #
-# Copyright (C) 2018 Sebastian Kemper <sebastian_ml@gmx.net>
-# Copyright (C) 2021-2022 Michal Hrusecky <michal@hrusecky.net>
+# Copyright (C) 2025 Michal Hrusecky <michal@hrusecky.net>
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,22 +8,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mariadb
-PKG_VERSION:=10.4.26
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=11.8.3
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL := https://archive.mariadb.org/$(PKG_NAME)-$(PKG_VERSION)/source
 
-PKG_HASH:=715ac7e23afc3b8a559c6cc998cdb1973d90f621b2bdd7603e2c6e53860b2ddf
+PKG_HASH:=1014a85c768de8f9e9c6d4bf0b42617f3b1588be1ad371f71674ea32b87119c0
 PKG_MAINTAINER:=Michal Hrusecky <Michal@Hrusecky.net>
 PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=COPYING THIRDPARTY
 
 PKG_CPE_ID:=cpe:/a:mariadb:mariadb
 
-HOST_BUILD_PARALLEL:=1
-PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 HOST_BUILD_DEPENDS:=libxml2/host
 # Without libevent2 tests/async_queries sporadically fails on the bots
@@ -37,13 +34,12 @@ SHARE_DIR:=/usr/share/mariadb
 MARIADB_SOCKET=/var/run/mysql/mysql.sock
 
 MARIADB_DISABLE_ENGINES := \
-	cassandra \
+	columnstore \
 	example \
 	mroonga \
 	oqgraph \
 	rocksdb \
-	test_sql_discovery \
-	tokudb
+	test_sql_discovery
 
 MARIADB_DISABLE_PLUGINS := \
 	audit_null \
@@ -83,6 +79,7 @@ MARIADB_SERVER_PLUGINS := \
 
 PKG_CONFIG_DEPENDS := \
 	$(patsubst %,CONFIG_PACKAGE_$(PKG_NAME)-server-plugin-%,$(subst _,-,$(MARIADB_SERVER_PLUGINS))) \
+	CONFIG_KERNEL_IO_URING \
 	CONFIG_PACKAGE_mariadb-server
 
 plugin-auth_ed25519             := PLUGIN_AUTH_ED25519
@@ -165,12 +162,13 @@ MARIADB_SERVER_EXTRA := \
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk
-include $(INCLUDE_DIR)/cmake.mk
 include $(INCLUDE_DIR)/nls.mk
+include $(INCLUDE_DIR)/cmake.mk
 
 MARIADB_COMMON_DEPENDS := \
 	$(ICONV_DEPENDS) \
 	+libatomic \
+	+libfmt \
 	+libopenssl \
 	+libstdcpp \
 	+zlib
@@ -178,6 +176,10 @@ MARIADB_COMMON_DEPENDS := \
 # Pass CPPFLAGS in the CFLAGS as otherwise the build system will
 # ignore them.
 TARGET_CFLAGS+=$(TARGET_CPPFLAGS)
+
+ifneq ($(CONFIG_USE_MUSL),)
+  TARGET_CFLAGS += -D_LARGEFILE64_SOURCE
+endif
 
 define Package/mariadb/disable/engine
 	echo > $(1)/storage/$(2)/CMakeLists.txt
@@ -228,7 +230,10 @@ endef
 define Package/mariadb-client-extra
   $(call Package/mariadb/Default)
   TITLE:=MariaDB database client extra
-  DEPENDS:=mariadb-client
+  DEPENDS:=mariadb-client \
+	  +KERNEL_IO_URING:liburing \
+	  +libaio \
+	  +libpcre2
 endef
 
 define Package/mariadb-client-extra/description
@@ -261,9 +266,10 @@ define Package/mariadb-server-base
   $(call Package/mariadb/Default)
   DEPENDS:= \
 	  $(MARIADB_COMMON_DEPENDS) \
+	  +KERNEL_IO_URING:liburing \
 	  +libaio \
 	  +liblzma \
-	  +libpcre \
+	  +libpcre2 \
 	  +resolveip \
 	  +sudo
   TITLE:=MariaDB database server base
@@ -304,17 +310,11 @@ endef
 # We won't need unit tests
 CMAKE_OPTIONS += -DWITH_UNIT_TESTS=0
 
-# This value is determined automatically during straight compile by compiling
-# and running a test code. You cannot do that during cross-compile. However the
-# stack grows downward in most if not all modern systems. The only exception
-# according to buildroot is PA-RISC which is not supported by OpenWrt as far as
-# I know. Therefore it makes sense to hardcode the value. If an arch is added
-# the stack of which grows up one should expect unpredictable behavior at run
-# time.
-CMAKE_OPTIONS += -DSTACK_DIRECTION=-1
-
 # Make it explicit that we are cross-compiling
 CMAKE_OPTIONS += -DCMAKE_CROSSCOMPILING=1
+
+# Apply workaround to pass LIBFMT check when cross-compiling
+CMAKE_OPTIONS += -DHAVE_SYSTEM_LIBFMT_EXITCODE=0
 
 # Explicitly disable dtrace to avoid detection of a host version
 CMAKE_OPTIONS += -DENABLE_DTRACE=0
@@ -331,6 +331,7 @@ CMAKE_OPTIONS += -DWITHOUT_SERVER=OFF -DPLUGIN_AUTH_SOCKET=STATIC
 endif
 
 CMAKE_OPTIONS += \
+	-DCMAKE_DISABLE_FIND_PACKAGE_URING=$(if $(CONFIG_KERNEL_IO_URING),OFF,ON) \
 	-DCONNECT_WITH_JDBC=NO \
 	-DCONNECT_WITH_LIBXML2=system \
 	-DCONNECT_WITH_MONGO=NO \
@@ -355,10 +356,11 @@ CMAKE_OPTIONS += \
 	-DINSTALL_SQLBENCHDIR="" \
 	-DINSTALL_SUPPORTFILESDIR=share/mariadb \
 	-DINSTALL_UNIX_ADDRDIR=$(MARIADB_SOCKET) \
+	-DHOSTNAME="uci get system.@system[0].hostname" \
 	-DMYSQL_DATADIR=/srv/mysql \
 	-DMYSQL_UNIX_ADDR=$(MARIADB_SOCKET) \
+	-DSEMODULE_PACKAGE_EXECUTABLE=NOT-FOUND \
 	-DSKIP_TESTS=ON \
-	-DWITH_DEBUG=OFF \
 	-DWITH_EMBEDDED_SERVER=OFF \
 	-DWITH_INNODB_BZIP2=OFF \
 	-DWITH_INNODB_LZ4=OFF \
@@ -366,7 +368,9 @@ CMAKE_OPTIONS += \
 	-DWITH_INNODB_LZO=OFF \
 	-DWITH_INNODB_SNAPPY=OFF \
 	-DWITH_JEMALLOC=OFF \
+	-DWITH_LIBAIO=$(if $(CONFIG_KERNEL_IO_URING),OFF,ON) \
 	-DWITH_LIBARCHIVE=OFF \
+	-DWITH_LIBFMT=system \
 	-DWITH_LIBWRAP=OFF \
 	-DWITH_MARIABACKUP=ON \
 	-DWITH_NUMA=OFF \
@@ -374,6 +378,7 @@ CMAKE_OPTIONS += \
 	-DWITH_SAFEMALLOC=OFF \
 	-DWITH_SSL=system \
 	-DWITH_SYSTEMD=no \
+	-DWITH_URING=$(if $(CONFIG_KERNEL_IO_URING),ON,OFF) \
 	-DWITH_VALGRIND=OFF \
 	-DWITH_ZLIB=system
 
@@ -430,11 +435,12 @@ endef
 
 define Host/Install
 	$(SED) 's|$(HOST_BUILD_DIR)|$(STAGING_DIR_HOSTPKG)/share/mariadb|' $(HOST_BUILD_DIR)/import_executables.cmake
-	$(INSTALL_DIR) $(1)/share/mariadb/{dbug,extra,scripts,sql}
+	$(INSTALL_DIR) $(1)/share/mariadb/{dbug,extra,scripts,sql,strings}
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/dbug/factorial $(1)/share/mariadb/dbug
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/extra/comp_err $(1)/share/mariadb/extra
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/scripts/comp_sql $(1)/share/mariadb/scripts
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/sql/{gen_lex_hash,gen_lex_token} $(1)/share/mariadb/sql
+	$(INSTALL_BIN) $(HOST_BUILD_DIR)/strings/uca-dump $(1)/share/mariadb/strings
 	$(INSTALL_DATA) $(HOST_BUILD_DIR)/import_executables.cmake $(1)/share/mariadb
 endef
 
@@ -531,11 +537,6 @@ ifeq ($(1),auth_pam)
 	  $(INSTALL_DATA) \
 		  $(PKG_INSTALL_DIR)/lib/security/pam_user_map.so \
 					  $$(1)/lib/security
-endif
-ifeq ($(1),ha_spider)
-	  $(INSTALL_DIR) $$(1)$(SHARE_DIR)
-	  $(INSTALL_DATA) $(PKG_INSTALL_DIR)$(SHARE_DIR)/install_spider.sql \
-		  $$(1)$(SHARE_DIR)
 endif
   endef
   $$(eval $$(call BuildPackage,mariadb-server-plugin-$(subst _,-,$(1))))

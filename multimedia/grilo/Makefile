@@ -6,30 +6,29 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=grilo
-PKG_VERSION:=0.3.13
+PKG_VERSION:=0.3.19
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=@GNOME/grilo/0.3/
-PKG_HASH:=d14837f22341943ed8a189d9f0827a17016b802d18d0ed080e1413de0fdc927b
+PKG_SOURCE_URL:=@GNOME/grilo/$(basename $(PKG_VERSION))
+PKG_HASH:=0869c81d19ab139c667d79567c14ddcb6cb5cbfc0108d04cade287eb29536706
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org>
 PKG_LICENSE:=LGPL-2.1-or-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_INSTALL:=1
 PKG_BUILD_DEPENDS:=vala/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 define Package/grilo
   SECTION:=multimedia
   CATEGORY:=Multimedia
   TITLE:=grilo
   URL:=https://wiki.gnome.org/Projects/Grilo
-  DEPENDS:=+glib2 +libsoup +libxml2
+  DEPENDS:=+glib2 +libsoup3 +libxml2
 endef
 
 define Package/grilo/decription

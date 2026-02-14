@@ -8,17 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sumo
-PKG_VERSION:=1.8.0
-PKG_RELEASE:=1
+PKG_VERSION:=1.23.1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-src-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/sumo
-PKG_HASH:=fb0636152085153155ddb41841f0175c5f1e7989907b883f6c7453c63af49edb
+PKG_HASH:=016c506d8bd5d0b6f8e2229ac5dbb9e948535a041559cdd2ff6b616293ac21a8
 
 PKG_MAINTAINER:=Álvaro Fernández Rojas <noltari@gmail.com>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
-PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -28,7 +27,7 @@ define Package/sumo
   CATEGORY:=Utilities
   TITLE:=SUMO - Simulation of Urban MObility
   URL:=https://sumo.dlr.de/
-  DEPENDS:=+libxerces-c +zlib
+  DEPENDS:=+libfmt +libxerces-c +zlib
 endef
 
 define Package/sumo/description
@@ -41,7 +40,8 @@ define Package/sumo/description
 endef
 
 CMAKE_OPTIONS += \
-	-DCCACHE_SUPPORT=OFF
+	-DCCACHE_SUPPORT=OFF \
+	-DENABLE_PYTHON_BINDINGS=OFF
 
 define Package/sumo/install
 	$(INSTALL_DIR) $(1)/usr/bin

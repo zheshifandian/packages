@@ -5,25 +5,21 @@
 # See /LICENSE for more information.
 #
 
-# Warning by default OpenWrt does not have a root password which is necessery for NETCONF server.
+# Warning by default OpenWrt does not have a root password which is necessary for NETCONF server.
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=netopeer2
-PKG_VERSION:=1.1.53
-PKG_RELEASE:=2
-
-PKG_LICENSE:=BSD-3-Clause
-PKG_MAINTAINER:=Jakov Smolic <jakov.smolic@sartura.hr>
+PKG_VERSION:=2.4.5
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/CESNET/Netopeer2/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=6b43026211a787d5cb91d47cb7fdd7923649044c55f264aaf85bf5676c004211
+PKG_HASH:=63d42493752062e7dfb3d3aca9c4157f49298401bdc5cd5166975f2cbc5f6f1b
 
-CMAKE_INSTALL:=1
-
-PKG_BUILD_PARALLEL:=1
-PKG_INSTALL:=1
+PKG_MAINTAINER:=
+PKG_LICENSE:=BSD-3-Clause
+PKG_LICENSE_FILES=LICENSE
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -55,13 +51,11 @@ endef
 CMAKE_OPTIONS += \
 	-DCMAKE_INSTALL_PREFIX:PATH=/usr \
 	-DCMAKE_BUILD_TYPE:STRING=Release \
-	-DGENERATE_HOSTKEY:BOOL=OFF \
-	-DINSTALL_MODULES:BOOL=OFF \
-	-DMERGE_LISTEN_CONFIG:BOOL=OFF
+	-DSYSREPO_SETUP:BOOL=OFF
 
 define Package/netopeer2-server/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/netopeer2-server $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/netopeer2-server $(1)/usr/bin/
 
 	$(INSTALL_DIR) $(1)/etc/sysrepo/yang
 	$(INSTALL_DIR) $(1)/etc/netopeer2/modules

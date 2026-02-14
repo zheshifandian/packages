@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gdbm
-PKG_VERSION:=1.18.1
-PKG_RELEASE:=2
+PKG_VERSION:=1.25
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@GNU/gdbm
-PKG_HASH:=86e613527e5dba544e73208f42b78b7c022d4fa5a6d5498bf18c8d6f745b91dc
+PKG_HASH:=d02db3c5926ed877f8817b81cd1f92f53ef74ca8c6db543fbba0271b34f393ec
 
 PKG_MAINTAINER:=Marcel Denia <naoir@gmx.net>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -38,27 +38,31 @@ define Package/libgdbm/description
 endef
 
 CONFIGURE_ARGS += \
+	--enable-libgdbm-compat \
 	--enable-shared \
-	--enable-static
+	--without-readline
 
 define Build/Compile
 	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
 		BINOWN=`id -u` \
 		BINGRP=`id -g` \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
+		SUBDIRS=src \
 		all install
 endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
-	$(CP) $(PKG_INSTALL_DIR)/usr/include/gdbm.h $(1)/usr/include/
+	$(CP) $(PKG_INSTALL_DIR)/usr/include/{gdbm,ndbm}.h $(1)/usr/include/
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgdbm.{a,so*} $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgdbm.so* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgdbm_compat.so* $(1)/usr/lib/
 endef
 
 define Package/libgdbm/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgdbm.so.* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgdbm_compat.so* $(1)/usr/lib/
 endef
 
 $(eval $(call BuildPackage,libgdbm))

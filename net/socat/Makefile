@@ -6,12 +6,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=socat
-PKG_VERSION:=1.7.3.4
+PKG_VERSION:=1.8.0.3
 PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=http://www.dest-unreach.org/socat/download
-PKG_HASH:=972374ca86f65498e23e3259c2ee1b8f9dbeb04d12c2a78c0c9b5d1cb97dfdfc
+PKG_HASH:=01eb017361d95bb3a6941e840b59e4463a3fabf92df4154ed02b16a2ed6a0095
 
 PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>
 PKG_LICENSE:=GPL-2.0-or-later OpenSSL

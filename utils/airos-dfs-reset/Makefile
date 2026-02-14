@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=airos-dfs-reset
 PKG_VERSION:=1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=1
 
 PKG_MAINTAINER:=Simon Polack <spolack+git@mailbox.org>
 PKG_LICENSE:=GPL-2.0-only
@@ -19,12 +19,12 @@ define Package/airos-dfs-reset
   CATEGORY:=Utilities
   TITLE:=Companion app for Ubiquity AirOS to help with DFS
   PKGARCH:=all
-  EXTRA_DEPENDS:=dropbear
+  DEPENDS:=dropbear
 endef
 
 define Package/airos-dfs-reset/description
 Companion app for Ubiquity AirOS Gear to enforce fallback to original frequency after DFS event is over.
-It works by soft-rebooting if running-frequency doesnt match the configured frequency.
+It works by soft-rebooting if running-frequency doesn't match the configured frequency.
 endef
 
 define Package/airos-dfs-reset/conffiles

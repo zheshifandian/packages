@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gst1-plugins-bad
-PKG_VERSION:=1.18.1
+PKG_VERSION:=1.20.5
 PKG_RELEASE:=1
 
 PKG_SOURCE:=gst-plugins-bad-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://gstreamer.freedesktop.org/src/gst-plugins-bad/
-PKG_HASH:=c195978c85d97406c05eb9d43ac54b9ab35eda6ffdae32b3ed597b8f1743c1b2
+PKG_HASH:=f431214b0754d7037adcde93c3195106196588973e5b32dcb24938805f866363
 PKG_BUILD_DIR:=$(BUILD_DIR)/gst-plugins-bad-$(PKG_VERSION)
 
 PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org> \
@@ -21,11 +21,9 @@ PKG_MAINTAINER:=W. Michael Petullo <mike@flyn.org> \
 PKG_LICENSE:=LGPL-2.1-or-later GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING.LIB COPYING
 
-PKG_INSTALL:=1
-
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 GST_BAD_LIBS:=
 GST_BAD_MODULES:=
@@ -194,6 +192,7 @@ MESON_ARGS += \
 	-Dfluidsynth=disabled \
 	-Dgl=disabled \
 	-Dgme=disabled \
+	-Dgpl=enabled \
 	-Dgsm=disabled \
 	-Dipcpipeline=disabled \
 	-Diqa=disabled \
@@ -201,7 +200,6 @@ MESON_ARGS += \
 	-Dkms=disabled \
 	-Dladspa=disabled \
 	-Dlibde265=disabled \
-	-Dlibmms=disabled \
 	-Dlv2=disabled \
 	-Dmediafoundation=disabled \
 	-Dmicrodns=disabled \
@@ -212,7 +210,6 @@ MESON_ARGS += \
 	-Dmusepack=disabled \
 	-Dneon=disabled \
 	-Dnvcodec=disabled \
-	-Dofa=disabled \
 	-Dopenal=disabled \
 	-Dopenexr=disabled \
 	-Dopenh264=disabled \

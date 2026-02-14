@@ -8,19 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libyang
-PKG_VERSION:=1.0.215
+PKG_VERSION:=3.13.6
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/CESNET/libyang/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=c4498a77a7c12a28c9911f993eeafbf2badd2ecea58bb74781bd61cfc635e4c9
+PKG_HASH:=5cd5018f39c830f97d70616c003990287ce5e820ae2792763a49e2a1f63af8d6
 
-PKG_MAINTAINER:=Jakov Smolic <jakov.smolic@sartura.hr>
+PKG_MAINTAINER:=
 PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE
+PKG_CPE_ID:=cpe:/a:cesnet:libyang
 
 CMAKE_INSTALL:=1
-PKG_BUILD_PARALLEL:=1
 CMAKE_BINARY_SUBDIR:=build
 
 include $(INCLUDE_DIR)/package.mk
@@ -31,15 +31,7 @@ define Package/libyang
   CATEGORY:=Libraries
   TITLE:=YANG data modeling language library
   URL:=https://github.com/CESNET/libyang
-  DEPENDS:=+libpcre +libpthread
-endef
-
-define Package/libyang-cpp
-  SECTION:=libs
-  CATEGORY:=Libraries
-  TITLE:=YANG data modeling C++ language library
-  URL:=https://github.com/CESNET/libyang
-  DEPENDS:=+libyang +libstdcpp
+  DEPENDS:=+libpcre2 +libpthread +libxxhash
 endef
 
 define Package/yanglint
@@ -55,27 +47,9 @@ define Package/libyang/description
  The library is used e.g. in libnetconf2, Netopeer2 or sysrepo projects.
 endef
 
-CMAKE_OPTIONS += \
-	-DENABLE_LYD_PRIV:BOOL=ON \
-	-DCMAKE_BUILD_TYPE:String="Release" \
-	-DGEN_LANGUAGE_BINDINGS=ON \
-	-DGEN_PYTHON_BINDINGS=OFF
-
-
 define Package/libyang/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libyang.so* $(1)/usr/lib/
-
-	$(INSTALL_DIR) $(1)/usr/lib/libyang1
-	$(INSTALL_DIR) $(1)/usr/lib/libyang1/extensions
-	$(INSTALL_DIR) $(1)/usr/lib/libyang1/user_types
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/libyang1/extensions/* $(1)/usr/lib/libyang1/extensions
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/libyang1/user_types/* $(1)/usr/lib/libyang1/user_types
-endef
-
-define Package/libyang-cpp/install
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libyang-cpp.so* $(1)/usr/lib/
 endef
 
 define Package/yanglint/install
@@ -84,5 +58,4 @@ define Package/yanglint/install
 endef
 
 $(eval $(call BuildPackage,libyang))
-$(eval $(call BuildPackage,libyang-cpp))
 $(eval $(call BuildPackage,yanglint))

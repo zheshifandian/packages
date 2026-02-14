@@ -9,10 +9,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openzwave
-PKG_VERSION:=1.6.1149
-PKG_RELEASE:=2
+PKG_VERSION:=1.6.1965
+PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+# Last available tarball; apply update patch from git
+PKG_SOURCE:=$(PKG_NAME)-1.6.1149.tar.gz
 PKG_SOURCE_URL:=http://old.openzwave.com/downloads
 PKG_HASH:=dc747c24cae11e4aa121252cc38ea92d1fbc587dc514737dd0e2b24191521c48
 PKG_INSTALL:=1
@@ -51,12 +52,15 @@ $(call Package/openzwave/default)
   TITLE:=Open-ZWave Device Configs
 endef
 
+TAR_CMD=$(HOST_TAR) -C $(1) $(TAR_OPTIONS) --strip-components=1
+
 TARGET_CPPFLAGS+=-Wno-format -Wno-format-security
 
 MAKE_FLAGS += \
 	LD="$(TARGET_CROSS)g++" \
 	LIBDIR="$(PKG_BUILD_DIR)" \
 	PREFIX=$(CONFIGURE_PREFIX) \
+	UNAME="Linux" \
 	USE_HID="no" \
 	ar_option="q" \
 	instlibdir=/usr/lib \

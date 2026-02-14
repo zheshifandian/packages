@@ -221,6 +221,11 @@ config service "myddns"
 #	option ip_source "script"
 #	option ip_script ""
 
+	# This option can be used in combination with ip_source "web" and ip_url.
+	# It adds a given user agent string to the request.
+	# Will only be used when wget or wget-ssl is installed.
+#	option user_agent "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/95.0"
+
 	###########
 	# force_ipversion option will set the "-4" respectively "-6" parameter
 	# on command line of transfer and DNS lookup program.
@@ -266,7 +271,7 @@ config service "myddns"
 	# a network to use for communication.
 	# should use option ip_source "web" (see above)
 	# Needs GNU Wget (with SSL support) or cURL to be installed.
-	# GNU Wget will use IP address and cURL the physical device 
+	# GNU Wget will use IP address and cURL the physical device
 	# of the given network
 	# default: none
 #	option bind_network "wan7"
@@ -299,10 +304,10 @@ config service "myddns"
 
 	###########
 	# if error happen on detecting, sending or updating the
-	# script will retry the relevant action for retry_count times
+	# script will retry the relevant action for retry_max_count times
 	# before stopping script execution.
 	# default: 5
-	option retry_count '5'
+	option retry_max_count '5'
 
 	###########
 	# if error happen on detecting, sending or updating the
