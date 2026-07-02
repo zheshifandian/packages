@@ -1,6 +1,6 @@
 # This is a dummy go package that allows packages to use default go version by
 # setting PKG_BUILD_DEPENDS:=golang/host, instead of specifying a concrete
-# version, e.g. PKG_BUILD_DEPENDS:=golang1.25/host
+# version, e.g. PKG_BUILD_DEPENDS:=golang1.26/host
 #
 # SPDX-License-Identifier: GPL-2.0-only
 

@@ -74,7 +74,6 @@ HOST_CONFIGURE_ARGS = \
 	--dist-compression-formats=gz \
 	--disable-sanitizers \
 	--release-channel=stable \
-	--enable-cargo-native-static \
 	--bootstrap-cache-path=$(DL_DIR)/rustc \
 	--set=llvm.download-ci-llvm=true \
 	$(TARGET_CONFIGURE_ARGS)
@@ -93,7 +92,7 @@ define Host/Compile
 	$(PYTHON) $(HOST_BUILD_DIR)/x.py \
 		--ci false \
 		--build-dir $(HOST_BUILD_DIR)/build \
-		dist build-manifest rustc rust-std cargo llvm-tools rust-src
+		dist build-manifest rustc rust-std rust-src
 endef
 
 define Host/Install

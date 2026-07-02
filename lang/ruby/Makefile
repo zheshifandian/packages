@@ -171,7 +171,7 @@ define Package/ruby/config
 	bool "Enable YJIT"
 	depends on PACKAGE_ruby
 	depends on x86_64||aarch64
-	default y if x86_64||aarch64
+	default n
 	help
 	 	YJIT is a lightweight, minimalistic Ruby JIT built
 	 	inside CRuby. It lazily compiles code using a Basic Block Versioning (BBV)
@@ -399,7 +399,7 @@ define Package/ruby-digest/config
 			OpenSSL saves about 30KBytes (less when compressed) but requires OpenSSL (that
 			is way bigger than that). However, if OpenSSL is already needed by another usage,
 			as ruby-openssl or any other non ruby package, it is better to mark this option.
-		default n
+		default y
 
 endef
 define Package/ruby-digest/files
